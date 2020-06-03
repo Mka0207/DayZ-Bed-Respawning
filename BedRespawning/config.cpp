@@ -4,7 +4,7 @@ class CfgPatches
 	{
 		requiredAddons[]=
 		{
-			"1870357551"
+			//""
 		};
 	};
 };
