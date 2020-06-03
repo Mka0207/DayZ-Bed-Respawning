@@ -2,20 +2,30 @@ class BedFrameWork
 {
 	static ref map<string,vector> StoredBeds = new map<string,vector>;
 
+	static bool m_Loaded = false;
+	
 	static void InsertBed(Object bed, Man player)
 	{
 		PlayerBase pb = PlayerBase.Cast( player );
 		PlayerIdentity pd = pb.GetIdentity();
 
-		StoredBeds.Insert( pd.GetId(), bed.GetPosition() );
-	
+		if ( StoredBeds.Get( pd.GetId() ) )
+		{
+			RemoveBedData( pd.GetId() );
+			StoredBeds.Insert( pd.GetId(), bed.GetPosition() );
+		}
+		else
+		{
+			StoredBeds.Insert( pd.GetId(), bed.GetPosition() );
+		}
+		
 		string msg = "[BedRespawning] Bed has been placed by ";
 		string name = pb.GetIdentity().GetName();
 		vector bedpos = bed.GetPosition();
 		string ext_msg = " @ Location :";
 		
 		Print( msg + name + ext_msg + bedpos );
-
+		
 		FileHandle file = OpenFile("$profile:BedData.txt", FileMode.WRITE);
 		if (file != 0)
 		{
@@ -29,6 +39,22 @@ class BedFrameWork
 
 			CloseFile(file);
 		}
+	}
+
+	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos )
+	{
+		foreach(string k, vector a: StoredBeds)
+		{
+			//Print("StoredBeds[" + k + "] = " + a);
+			
+			if ( k == identity.GetId() )
+			{
+				DefaultPos = a;
+				break;
+			}
+		}
+
+		return DefaultPos;
 	}
 
 	static void LoadBedData()
@@ -52,19 +78,37 @@ class BedFrameWork
 				float stored_vect_y = strgs.Get(3).ToFloat();
 				float stored_vect_z = strgs.Get(4).ToFloat();
 
-				Print(stored_vect_x);
-				Print(stored_vect_y);
-				Print(stored_vect_z);
+				//Print(stored_vect_x);
+				//Print(stored_vect_y);
+				//Print(stored_vect_z);
 
 				vector BedPos = Vector(stored_vect_x, stored_vect_y, stored_vect_z);
 				StoredBeds.Insert( stored_id, BedPos );
 				
-				Print( stored_index );
-				Print( stored_id );
-				Print( BedPos );
+				//Print( stored_index );
+				//Print( stored_id );
+				//Print( BedPos );
 			}
 
+			Print("[BedRespawning] Loaded Data!");
+
 			CloseFile(file_handle);
+			m_Loaded = true;
+		}
+	}
+
+	static void RemoveBedData( string guid )
+	{
+		foreach(string k, vector a: BedFrameWork.StoredBeds)
+		{
+			if ( k == guid )
+			{
+				BedFrameWork.StoredBeds.Remove(k);
+				string msg = "[BedRespawning] Bed deleted ";
+				string ext_msg = " @ Location :";
+				
+				Print( msg + ext_msg + a );
+			}
 		}
 	}
 }

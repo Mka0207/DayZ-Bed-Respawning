@@ -1,17 +1,17 @@
 class CfgPatches
 {
-	class FirstMod
+	class BedRespawning
 	{
 		requiredAddons[]=
 		{
-			// ""
+			"1870357551"
 		};
 	};
 };
 
 class CfgMods
 {
-	class FirstMod
+	class BedRespawning
 	{
 	    type = "mod";
 		
@@ -21,7 +21,7 @@ class CfgMods
 			/*class worldScriptModule		
             {
                 value = "";
-                files[] = {"FirstMod/WorldScripts"};
+                files[] = {"BedRespawning/WorldScripts"};
             };*/
 			
 			 /*
@@ -29,26 +29,26 @@ class CfgMods
             class gameLibScriptModule
             {
                 value="";
-                files[]={"FirstMod/scripts/2_GameLib"};
+                files[]={"BedRespawning/scripts/2_GameLib"};
             };*/
             
 			/* class gameScriptModule
             {
                 value="CreateGameMod"; // when value is filled, default script module entry function name is overwritten by it
-                files[]={"FirstMod/scripts/3_Game"};
+                files[]={"BedRespawning/scripts/3_Game"};
             };*/
              
             class worldScriptModule
             {
                 value="";
-                files[]={"FirstMod/scripts/4_World"};
+                files[]={"BedRespawning/scripts/4_World"};
             };
              
 			/*
             class missionScriptModule
             {
                 value="";
-                files[]={"FirstMod/scripts/5_Mission"};
+                files[]={"BedRespawning/scripts/5_Mission"};
             };*/
         };
     };
