@@ -24,6 +24,6 @@ If the bed is deconstructed then you cannot respawn there. Beds are loaded/saved
 
 Positions / Guids of placed beds are stored in the servers profile folder under the filename "BedData.txt".
 
-## Disclaimer : Any repacking / reuploading / modifying of this github code is prohibited.
+### Disclaimer : Any repacking / reuploading / modifying of this github code is prohibited.
 
-Please contact me for permission / feedback!
+### Please contact me for permission / feedback!
