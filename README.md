@@ -6,10 +6,10 @@ Workshop Link : https://steamcommunity.com/sharedfiles/filedetails/?id=211127505
 ## Instructions :
 Open the init.c file and find the line of old code (CTRL+F) and replace it with the new code :
 
-## old code -
+## Old code -
 `playerEnt = GetGame().CreatePlayer(identity, characterName, pos, 0, "NONE");`
 
-## new code -
+## New code -
 `playerEnt = GetGame().CreatePlayer(identity, characterName, BedFrameWork.AttemptBedSpawn(identity,pos), 0, "NONE");`
 
 ## It should look like this AFTER :
