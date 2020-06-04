@@ -3,6 +3,8 @@ A mod to allow respawning on beds.
 
 Workshop Link : https://steamcommunity.com/sharedfiles/filedetails/?id=2111275052
 
+This mod requires [Base_Storage](https://steamcommunity.com/workshop/filedetails/?id=1870357551) to work properly.
+
 ## Instructions :
 Open the init.c file and find the line of old code (CTRL+F) and replace it with the new code :
 
