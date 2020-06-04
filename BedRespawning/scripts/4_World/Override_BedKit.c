@@ -26,19 +26,7 @@ class BedFrameWork
 		
 		Print( msg + name + ext_msg + bedpos );
 		
-		FileHandle file = OpenFile("$profile:BedData.txt", FileMode.WRITE);
-		if (file != 0)
-		{
-			int index = 0;
-			foreach(string k, vector a: StoredBeds)
-			{
-				index++;
-				string concat = index.ToString() + " " + k + " " + a.ToString(false);
-				FPrintln(file, concat );
-			}
-
-			CloseFile(file);
-		}
+		SaveBedData();
 	}
 
 	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos )
@@ -55,6 +43,53 @@ class BedFrameWork
 		}
 
 		return DefaultPos;
+	}
+	
+	static int GetPlayerBedID(PlayerIdentity player)
+	{
+		int plybed_id = -1;
+		
+		FileHandle file_handle = OpenFile("$profile:BedData.txt", FileMode.READ);
+		if (file_handle != 0)
+		{
+			string line_content;
+			
+			while ( FGets( file_handle,  line_content ) > 0 )
+			{
+				array<string> strgs = new array<string>;
+				line_content.Split(" ", strgs);
+
+				string stored_id = strgs.Get(1);
+				int stored_index = strgs.Get(0).ToInt();
+				
+				if ( player.GetId() == stored_id )
+				{
+					plybed_id = stored_index
+					break;
+				}
+			}
+
+			CloseFile(file_handle);
+		}
+		
+		return plybed_id;
+	}
+	
+	static void SaveBedData()
+	{
+		FileHandle file = OpenFile("$profile:BedData.txt", FileMode.WRITE);
+		if (file != 0)
+		{
+			int index = 0;
+			foreach(string k, vector a: StoredBeds)
+			{
+				index++;
+				string concat = index.ToString() + " " + k + " " + a.ToString(false);
+				FPrintln(file, concat );
+			}
+
+			CloseFile(file);
+		}
 	}
 
 	static void LoadBedData()
@@ -110,6 +145,8 @@ class BedFrameWork
 				Print( msg + ext_msg + a );
 			}
 		}
+		
+		SaveBedData();
 	}
 }
 
@@ -117,8 +154,6 @@ modded class Base_SingleBed_Kit extends ItemBase
 {
 	override void OnPlacementComplete( Man player )
 	{
-		//super.OnPlacementComplete( player );
-		
 		PlayerBase pb = PlayerBase.Cast( player );
 		if ( GetGame().IsServer() )
 		{
@@ -142,17 +177,27 @@ modded class ActionDismantleBase_SingleBed: ActionContinuousBase
 	void RemoveFromBedFrameWork(ActionData action_data)
 	{
 		PlayerIdentity pd = action_data.m_Player.GetIdentity();
-		foreach(string k, vector a: BedFrameWork.StoredBeds)
+
+		foreach(string id, vector stored_pos: BedFrameWork.StoredBeds)
 		{
-			if ( k == pd.GetId() )
+			string newpos = action_data.m_Target.GetObject().GetPosition().ToString(false);
+			string oldpos = stored_pos.ToString(false);
+			
+			Print(newpos);
+			Print(oldpos);
+			
+			if ( newpos == oldpos )
 			{
-				BedFrameWork.StoredBeds.Remove(k);
 				string msg = "[BedRespawning] Bed deconstructed by ";
 				string name = action_data.m_Player.GetIdentity().GetName();
 				vector bedpos = action_data.m_Target.GetObject().GetPosition();
 				string ext_msg = " @ Location :";
 				
 				Print( msg + name + ext_msg + bedpos );
+				
+				BedFrameWork.RemoveBedData( id );
+				
+				break;
 			}
 		}
 	}
