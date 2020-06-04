@@ -44,12 +44,12 @@ class CfgMods
                 files[]={"BedRespawning/scripts/4_World"};
             };
              
-			/*
+			
             class missionScriptModule
             {
                 value="";
                 files[]={"BedRespawning/scripts/5_Mission"};
-            };*/
+            };
         };
     };
 };

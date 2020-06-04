@@ -117,7 +117,7 @@ modded class Base_SingleBed_Kit extends ItemBase
 {
 	override void OnPlacementComplete( Man player )
 	{
-		super.OnPlacementComplete( player );
+		//super.OnPlacementComplete( player );
 		
 		PlayerBase pb = PlayerBase.Cast( player );
 		if ( GetGame().IsServer() )
