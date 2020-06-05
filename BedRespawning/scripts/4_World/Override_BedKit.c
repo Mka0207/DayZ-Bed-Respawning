@@ -6,14 +6,15 @@ modded class ItemBase extends InventoryItem
 
 		super.OnPlacementComplete(player);
 
-		Print( ent_type );
+		//Print( ent_type );
 
-		if ( BedFrameWork.BedClassNames.Get(ent_type) )
+		if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
 			vector position = player_base.GetLocalProjectionPosition();
 
 			BedFrameWork.InsertBed( position, player );
+			BedFrameWork.SaveBedData();
 		}
 	}
 
@@ -23,7 +24,7 @@ modded class ItemBase extends InventoryItem
 
 		//Print( this.GetType() );
 
-		if ( BedFrameWork.BedClassNames.Get( this.GetType() ) || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" )
+		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" )
 		{
 			//Print("Deleted Bed!!!!!!!!!!!!");
 
@@ -38,9 +39,9 @@ modded class ItemBase extends InventoryItem
 					string ext_msg = " @ Location :";
 					
 					Print( msg + ext_msg + a );
+					BedFrameWork.SaveBedData();
 				}
 			}
-			BedFrameWork.SaveBedData();
 		}
 	}
 }
@@ -62,23 +63,14 @@ class BedFrameWork
 		PlayerBase pb = PlayerBase.Cast( player );
 		PlayerIdentity pd = pb.GetIdentity();
 
-		if ( StoredBeds.Get( pd.GetId() ) )
-		{
-			RemoveBedData( pd.GetId() );
-			StoredBeds.Insert( pd.GetId(), bed );
-		}
-		else
-		{
-			StoredBeds.Insert( pd.GetId(), bed );
-		}
+		RemoveBedData( pd.GetId() );
+		StoredBeds.Insert( pd.GetId(), bed );
 		
 		string msg = "[BedRespawning] Bed has been placed by ";
 		string name = pb.GetIdentity().GetName();
 		string ext_msg = " @ Location :";
 		
 		Print( msg + name + ext_msg + bed );
-		
-		SaveBedData();
 	}
 
 	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos )
@@ -196,8 +188,8 @@ class BedFrameWork
 				string stored_class = strgs_config.Get(0);
 				int stored_status = strgs_config.Get(1).ToInt();
 
-				//Print(stored_class);
-				//Print(stored_status);
+				Print(stored_class);
+				Print(stored_status);
 				BedClassNames.Insert(stored_class,stored_status);
 			}
 
@@ -221,17 +213,5 @@ class BedFrameWork
 				Print( msg + ext_msg + a );
 			}
 		}
-		
-		SaveBedData();
-	}
-}
-
-modded class ActionDeployObject: ActionContinuousBase
-{
-	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		Print(this);
-		Print("finished serer!");
-		super.OnFinishProgressServer(action_data);
 	}
 }
