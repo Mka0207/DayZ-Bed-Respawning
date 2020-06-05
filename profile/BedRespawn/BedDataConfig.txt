@@ -1,0 +1,5 @@
+Base_SingleBed_Kit 1
+sleepingbag_red_mung 1
+sleepingbag_blue_mung 1
+sleepingbag_green_mung 1
+sleepingbag_yellow_mung 1
