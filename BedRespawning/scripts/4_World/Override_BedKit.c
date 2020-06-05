@@ -1,10 +1,63 @@
+modded class ItemBase extends InventoryItem
+{
+	override void OnPlacementComplete( Man player )
+	{
+		string ent_type = GetType();
+
+		super.OnPlacementComplete(player);
+
+		Print( ent_type );
+
+		if ( BedFrameWork.BedClassNames.Get(ent_type) )
+		{
+			PlayerBase player_base = PlayerBase.Cast( player );
+			vector position = player_base.GetLocalProjectionPosition();
+
+			BedFrameWork.InsertBed( position, player );
+		}
+	}
+
+	override void EEDelete(EntityAI parent)
+	{
+		super.EEDelete(parent);
+
+		//Print( this.GetType() );
+
+		if ( BedFrameWork.BedClassNames.Get( this.GetType() ) || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" )
+		{
+			//Print("Deleted Bed!!!!!!!!!!!!");
+
+			foreach(string k, vector a: BedFrameWork.StoredBeds)
+			{
+				string BedPos = this.GetPosition().ToString(false);
+				string OldBedPos = a.ToString(false);
+				if ( OldBedPos == BedPos )
+				{
+					BedFrameWork.StoredBeds.Remove(k);
+					string msg = "[BedRespawning] Bed deleted ";
+					string ext_msg = " @ Location :";
+					
+					Print( msg + ext_msg + a );
+				}
+			}
+			BedFrameWork.SaveBedData();
+		}
+	}
+}
+
 class BedFrameWork
 {
 	static ref map<string,vector> StoredBeds = new map<string,vector>;
 
+	static ref map<string,int> BedClassNames = new map<string,int>;
+
 	static bool m_Loaded = false;
+
+	static string TextFileName = "BedRespawn/BedData";
+
+	static string ConfigFileName = "BedRespawn/BedDataConfig";
 	
-	static void InsertBed(Object bed, Man player)
+	static void InsertBed(vector bed, Man player)
 	{
 		PlayerBase pb = PlayerBase.Cast( player );
 		PlayerIdentity pd = pb.GetIdentity();
@@ -12,19 +65,18 @@ class BedFrameWork
 		if ( StoredBeds.Get( pd.GetId() ) )
 		{
 			RemoveBedData( pd.GetId() );
-			StoredBeds.Insert( pd.GetId(), bed.GetPosition() );
+			StoredBeds.Insert( pd.GetId(), bed );
 		}
 		else
 		{
-			StoredBeds.Insert( pd.GetId(), bed.GetPosition() );
+			StoredBeds.Insert( pd.GetId(), bed );
 		}
 		
 		string msg = "[BedRespawning] Bed has been placed by ";
 		string name = pb.GetIdentity().GetName();
-		vector bedpos = bed.GetPosition();
 		string ext_msg = " @ Location :";
 		
-		Print( msg + name + ext_msg + bedpos );
+		Print( msg + name + ext_msg + bed );
 		
 		SaveBedData();
 	}
@@ -77,7 +129,7 @@ class BedFrameWork
 	
 	static void SaveBedData()
 	{
-		FileHandle file = OpenFile("$profile:BedData.txt", FileMode.WRITE);
+		FileHandle file = OpenFile("$profile:"+TextFileName+".txt", FileMode.WRITE);
 		if (file != 0)
 		{
 			int index = 0;
@@ -94,7 +146,7 @@ class BedFrameWork
 
 	static void LoadBedData()
 	{
-		FileHandle file_handle = OpenFile("$profile:BedData.txt", FileMode.READ);
+		FileHandle file_handle = OpenFile("$profile:"+TextFileName+".txt", FileMode.READ);
 		if (file_handle != 0)
 		{
 			string line_content;
@@ -130,6 +182,30 @@ class BedFrameWork
 			CloseFile(file_handle);
 			m_Loaded = true;
 		}
+
+		FileHandle file_handle_config = OpenFile("$profile:"+ConfigFileName+".txt", FileMode.READ);
+		if (file_handle_config != 0)
+		{
+			string line_content_class;
+
+			while ( FGets( file_handle_config,  line_content_class ) > 0 )
+			{
+				array<string> strgs_config = new array<string>;
+				line_content_class.Split(" ", strgs_config);
+
+				string stored_class = strgs_config.Get(0);
+				int stored_status = strgs_config.Get(1).ToInt();
+
+				//Print(stored_class);
+				//Print(stored_status);
+				BedClassNames.Insert(stored_class,stored_status);
+			}
+
+			Print("[BedRespawning] Loaded Config!");
+
+			CloseFile(file_handle_config);
+		}
+		
 	}
 
 	static void RemoveBedData( string guid )
@@ -150,61 +226,12 @@ class BedFrameWork
 	}
 }
 
-modded class Base_SingleBed_Kit extends ItemBase
+modded class ActionDeployObject: ActionContinuousBase
 {
-	override void OnPlacementComplete( Man player )
-	{
-		PlayerBase pb = PlayerBase.Cast( player );
-		if ( GetGame().IsServer() )
-		{
-			PlayerBase player_base = PlayerBase.Cast( player );
-			vector position = player_base.GetLocalProjectionPosition();
-			vector orientation = player_base.GetLocalProjectionOrientation();
-				
-			Base_SingleBed_Kit1 = GetGame().CreateObject("Base_SingleBed", pb.GetLocalProjectionPosition(), false );
-			Base_SingleBed_Kit1.SetPosition( position );
-			Base_SingleBed_Kit1.SetOrientation( orientation );
-
-			BedFrameWork.InsertBed( Base_SingleBed_Kit1, player );
-		}	
-		
-		SetIsDeploySound( true );
-	}
-}
-
-modded class ActionDismantleBase_SingleBed: ActionContinuousBase
-{
-	void RemoveFromBedFrameWork(ActionData action_data)
-	{
-		PlayerIdentity pd = action_data.m_Player.GetIdentity();
-
-		foreach(string id, vector stored_pos: BedFrameWork.StoredBeds)
-		{
-			string newpos = action_data.m_Target.GetObject().GetPosition().ToString(false);
-			string oldpos = stored_pos.ToString(false);
-			
-			Print(newpos);
-			Print(oldpos);
-			
-			if ( newpos == oldpos )
-			{
-				string msg = "[BedRespawning] Bed deconstructed by ";
-				string name = action_data.m_Player.GetIdentity().GetName();
-				vector bedpos = action_data.m_Target.GetObject().GetPosition();
-				string ext_msg = " @ Location :";
-				
-				Print( msg + name + ext_msg + bedpos );
-				
-				BedFrameWork.RemoveBedData( id );
-				
-				break;
-			}
-		}
-	}
-	override void OnFinishProgressServer( ActionData action_data ) 
-	{
+	override void OnFinishProgressServer( ActionData action_data )
+	{	
+		Print(this);
+		Print("finished serer!");
 		super.OnFinishProgressServer(action_data);
-		RemoveFromBedFrameWork(action_data);
 	}
 }
-
