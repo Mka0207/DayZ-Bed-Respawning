@@ -1,8 +1,31 @@
 # DayZ-Bed-Respawning
-A script to allow respawning on beds.
+A mod to allow respawning on beds.
 
-https://steamcommunity.com/sharedfiles/filedetails/?id=2111275052
+Workshop Link : https://steamcommunity.com/sharedfiles/filedetails/?id=2111275052
 
-Disclaimer : Any repacking / reuploading / modifying of this github code is prohibited.
+This mod requires [Base_Storage](https://steamcommunity.com/workshop/filedetails/?id=1870357551) to work properly.
 
-Please contact me for permission / feedback!
+## Instructions :
+Open the init.c file and find the line of old code (CTRL+F) and replace it with the new code :
+
+## Old code -
+`playerEnt = GetGame().CreatePlayer(identity, characterName, pos, 0, "NONE");`
+
+## New code -
+`playerEnt = GetGame().CreatePlayer(identity, characterName, BedFrameWork.AttemptBedSpawn(identity,pos), 0, "NONE");`
+
+## It should look like this AFTER :
+![alt text](https://i.imgur.com/HfAkfcH.png "Example")
+
+Now if all things were done correctly, simply mount the mod, copy the key into the key folder and restart the server then you should be good to go!
+
+### How to use :
+After placing a "Single Bed Kit", the position will be saved so you respawn there after death.
+Placing a bed kit after you already have one will just overwrite the previous bed respawn location.
+If the bed is deconstructed then you cannot respawn there. Beds are loaded/saved from a text file.
+
+Positions / Guids of placed beds are stored in the servers profile folder under the filename "BedData.txt".
+
+### Disclaimer : Any repacking / reuploading / modifying of this github code is prohibited.
+
+### Please contact me for permission / feedback!
