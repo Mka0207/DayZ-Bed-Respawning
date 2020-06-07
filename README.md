@@ -3,8 +3,6 @@ A mod to allow respawning on beds.
 
 Workshop Link : https://steamcommunity.com/sharedfiles/filedetails/?id=2111275052
 
-This mod requires [Base_Storage](https://steamcommunity.com/workshop/filedetails/?id=1870357551) to work properly.
-
 ## Instructions :
 Open the init.c file and find the line of old code (CTRL+F) and replace it with the new code :
 
@@ -20,11 +18,13 @@ Open the init.c file and find the line of old code (CTRL+F) and replace it with 
 Now if all things were done correctly, simply mount the mod, copy the key into the key folder and restart the server then you should be good to go!
 
 ### How to use :
-After placing a "Single Bed Kit", the position will be saved so you respawn there after death.
+After placing a "Single Bed Kit" from Base_Storage or any sleeping bag from MunghardsItempack, the position will be saved so you spawn there after death.
 Placing a bed kit after you already have one will just overwrite the previous bed respawn location.
-If the bed is deconstructed then you cannot respawn there. Beds are loaded/saved from a text file.
+If the bed is deconstructed then you cannot spawn there. Beds are loaded/saved from a text file.
 
-Positions / Guids of placed beds are stored in the servers profile folder under the filename "BedData.txt".
+Positions / Guids / Config of placed beds are stored in the servers profile folder under the directory name "BedRespawn".
+BedDataConfig.txt can be edited to turn certain items on or off as respawn capable items, meaning you don't have to allow "Single Bed Kit" as a spawning location if you don't want.
+Example : 0 = off and 1 = on.
 
 ### Disclaimer : Any repacking / reuploading / modifying of this github code is prohibited.
 
