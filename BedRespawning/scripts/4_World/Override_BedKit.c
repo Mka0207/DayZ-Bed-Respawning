@@ -6,8 +6,6 @@ modded class ItemBase extends InventoryItem
 
 		super.OnPlacementComplete(player);
 
-		//Print( ent_type );
-
 		if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
@@ -18,13 +16,31 @@ modded class ItemBase extends InventoryItem
 		}
 	}
 
+	override void EEInventoryOut (Man oldParentMan, EntityAI diz, EntityAI newParent)
+	{
+		super.EEInventoryOut(oldParentMan,diz,newParent);
+
+		if ( BedFrameWork.BedClassNames.Get(diz.GetType()) && BedFrameWork.BedClassNames.Get(diz.GetType()) == 1 )
+		{
+			PlayerBase player_base = PlayerBase.Cast( oldParentMan );
+			vector position = player_base.GetLocalProjectionPosition();
+
+			BedFrameWork.InsertBed( position, oldParentMan );
+			BedFrameWork.SaveBedData();
+
+			//Print( oldParentMan );
+			//Print( diz );
+			//Print( newParent );
+		}
+	}
+
 	override void EEDelete(EntityAI parent)
 	{
 		super.EEDelete(parent);
 
 		//Print( this.GetType() );
 
-		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" )
+		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "BBP_Bed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" )
 		{
 			//Print("Deleted Bed!!!!!!!!!!!!");
 
