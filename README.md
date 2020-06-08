@@ -10,7 +10,7 @@ Open the init.c file and find the line of old code (CTRL+F) and replace it with 
 `playerEnt = GetGame().CreatePlayer(identity, characterName, pos, 0, "NONE");`
 
 ## New code -
-`playerEnt = GetGame().CreatePlayer(identity, characterName, BedFrameWork.AttemptBedSpawn(identity,pos), 0, "NONE");`
+`playerEnt = GetGame().CreatePlayer(identity, characterName, BedFrameWork.AttemptBedSpawn(identity,pos,false), 0, "NONE");`
 
 ## It should look like this AFTER :
 ![alt text](https://i.imgur.com/HfAkfcH.png "Example")
