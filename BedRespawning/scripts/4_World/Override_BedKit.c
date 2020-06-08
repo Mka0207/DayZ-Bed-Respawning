@@ -169,7 +169,7 @@ class BedFrameWork : Managed
 		ply.SetPosition( Location );
 	}
 
-	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos )
+	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos, bool DestroyOldBed = true  )
 	{
 		if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 		{
