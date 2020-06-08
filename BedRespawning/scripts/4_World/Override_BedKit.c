@@ -169,24 +169,11 @@ class BedFrameWork : Managed
 		ply.SetPosition( Location );
 	}
 
-	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos, bool DestroyOldBed = true )
+	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos )
 	{
-		foreach(string k, vector a: StoredBeds)
+		if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 		{
-			//Print("StoredBeds[" + k + "] = " + a);
-			
-			if ( k == identity.GetId() )
-			{
-				DefaultPos = a;
-
-				//Break the players bed after spawning once.
-				if ( DestroyOldBed )
-				{
-					BreakOldSpawnBed(identity,DefaultPos);
-				}
-	
-				break;
-			}
+			DefaultPos = BedFrameWork.StoredBeds.Get( identity.GetId() );
 		}
 
 		return DefaultPos;
@@ -197,7 +184,8 @@ class BedFrameWork : Managed
 		if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 		{
 			ref array<Object> Player_Bed = new array<Object>;
-			GetGame().GetObjectsAtPosition( pos, 2.0, Player_Bed, NULL );
+			GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
+			
 			for ( int i = 0; i < Player_Bed.Count(); i++ )
 			{
 				Object bed = Player_Bed.Get( i );
