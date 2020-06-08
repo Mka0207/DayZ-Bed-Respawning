@@ -13,7 +13,7 @@ Open the init.c file and find the line of old code (CTRL+F) and replace it with 
 `playerEnt = GetGame().CreatePlayer(identity, characterName, BedFrameWork.AttemptBedSpawn(identity,pos,false), 0, "NONE");`
 
 ## It should look like this AFTER :
-![alt text](https://i.imgur.com/HfAkfcH.png "Example")
+![alt text](https://i.imgur.com/tGGaAxt.png "Example")
 
 Now if all things were done correctly, simply mount the mod, copy the key into the key folder and restart the server then you should be good to go!
 
