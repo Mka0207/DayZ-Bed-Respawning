@@ -1,5 +1,6 @@
 //This is rougly what your init.c will look like, please make sure,
 // the 3 lines at the top of StartingEquipSetup are in your own mission file too.
+//The CreateCharacter function shouldnt have anything from BedSpawning in it at all!
 
 class CustomMission: MissionServer
 {
