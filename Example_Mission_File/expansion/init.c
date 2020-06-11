@@ -19,10 +19,6 @@ class CustomMission: MissionServer
 	// ------------------------------------------------------------
 	override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 	{
-		PlayerIdentity id = player.GetIdentity();
-		BedFrameWork.FixSpawningHeight( player, BedFrameWork.AttemptBedSpawn( id,player.GetPosition() ) );
-		BedFrameWork.BreakOldSpawnBed( id, BedFrameWork.AttemptBedSpawn( id,player.GetPosition() ) );
-		
 		if ( GetExpansionSettings() && GetExpansionSettings().GetSpawn() && GetExpansionSettings().GetSpawn().StartingGear.UseStartingGear )
 		{
 			SetStartingGear(player);
@@ -58,5 +54,9 @@ class CustomMission: MissionServer
 				SetRandomHealth(itemEnt);
 			}
 		}
+
+		PlayerIdentity id = player.GetIdentity();
+		BedFrameWork.FixSpawningHeight( player, BedFrameWork.AttemptBedSpawn( id,player.GetPosition() ) );
+		BedFrameWork.BreakOldSpawnBed( id, BedFrameWork.AttemptBedSpawn( id,player.GetPosition() ) );
 	}
 }
