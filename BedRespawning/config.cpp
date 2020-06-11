@@ -13,7 +13,16 @@ class CfgMods
 {
 	class BedRespawning
 	{
+		dir="BedResawning";
+		name="Bed-Respawning";
+		credits="Mka0207";
+		author="Mka0207";
 	    type = "mod";
+		dependencies[]=
+		{
+			"World",
+			"Mission"
+		};
 		
 	    class defs
 	    {

@@ -29,8 +29,9 @@ modded class ActionPlaceObject
 		if ( m_CommandUID == DayZPlayerConstants.CMD_ACTIONFB_DEPLOY_2HD )
 		{
 			ItemBase bed = action_data.m_MainItem;
-			Print(  bed.GetType() );
-			if ( bed.GetType() == "Base_SingleBed_Kit" || bed.GetType() == "BBP_BedKit" || bed.GetType() == "sleepingbag_red_mung_Deployed" || bed.GetType() == "sleepingbag_blue_mung_Deployed" || bed.GetType() == "sleepingbag_green_mung_Deployed" || bed.GetType() == "sleepingbag_yellow_mung_Deployed" ) return;
+
+			if ( bed.GetType() == "Base_SingleBed_Kit" || bed.GetType() == "sleepingbag_red_mung_Deployed" || bed.GetType() == "sleepingbag_blue_mung_Deployed" || bed.GetType() == "sleepingbag_green_mung_Deployed" || bed.GetType() == "sleepingbag_yellow_mung_Deployed" ) return;
+			if ( bed.GetType() == "OP_SleepingBagBluePlacing" || bed.GetType() == "OP_SleepingBagGreyPlacing" || bed.GetType() == "OP_SleepingBagCamoPlacing" ) return;
 
 			if ( BedFrameWork.BedClassNames.Get( bed.GetType() ) && BedFrameWork.BedClassNames.Get( bed.GetType() ) == 1 )
 			{
@@ -124,7 +125,7 @@ modded class ItemBase extends InventoryItem
 
 		//Print( this.GetType() );
 
-		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "BBP_Bed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" )
+		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "BBP_Bed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" || this.GetType() == "OP_SleepingBagCamo" )
 		{
 			BedFrameWork.RemoveBedDataByVector(this.GetPosition());
 		}
