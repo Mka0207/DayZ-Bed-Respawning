@@ -194,7 +194,6 @@ class BedFrameWork : Managed
 				//Print(bed);
 				//Print(bed.GetPosition().ToString(false));
 				//Print( BedFrameWork.StoredBeds.Get( identity.GetId() ) );
-
 				if ( BedFrameWork.BedClassNames.Get( bed.GetType() ) && bed.GetPosition().ToString(false) == BedFrameWork.StoredBeds.Get( identity.GetId() ).ToString(false) )
 				{
 					Print("Found bed, deleting it!");
