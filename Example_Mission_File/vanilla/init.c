@@ -1,5 +1,5 @@
 //This is rougly what your init.c will look like, please make sure,
-// the 3 lines at the top of StartingEquipSetup are in your own mission file too.
+// the 3 lines at the bottom of StartingEquipSetup are in your own mission file too.
 
 class CustomMission: MissionServer
 {
