@@ -16,6 +16,4 @@ OP_SleepingBagGrey 1
 OP_SleepingBagGreyPlacing 1
 OP_SleepingBagCamo 1
 OP_SleepingBagCamoPlacing 1
-Chub_Bed_UnPacked 1
-Chub_Bed_Kit 1
 DestroyBedAfterSpawn 1
