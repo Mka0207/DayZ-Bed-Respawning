@@ -32,6 +32,7 @@ modded class ActionPlaceObject
 
 			if ( bed.GetType() == "Base_SingleBed_Kit" || bed.GetType() == "sleepingbag_red_mung_Deployed" || bed.GetType() == "sleepingbag_blue_mung_Deployed" || bed.GetType() == "sleepingbag_green_mung_Deployed" || bed.GetType() == "sleepingbag_yellow_mung_Deployed" ) return;
 			if ( bed.GetType() == "OP_SleepingBagBluePlacing" || bed.GetType() == "OP_SleepingBagGreyPlacing" || bed.GetType() == "OP_SleepingBagCamoPlacing" ) return;
+			if ( bed.GetType() == "Chub_Bed_Kit" ) return;
 
 			if ( BedFrameWork.BedClassNames.Get( bed.GetType() ) && BedFrameWork.BedClassNames.Get( bed.GetType() ) == 1 )
 			{
@@ -125,7 +126,7 @@ modded class ItemBase extends InventoryItem
 
 		//Print( this.GetType() );
 
-		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "BBP_Bed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" || this.GetType() == "OP_SleepingBagCamo" )
+		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "BBP_Bed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" || this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "Chub_Bed_UnPacked" )
 		{
 			BedFrameWork.RemoveBedDataByVector(this.GetPosition());
 		}
@@ -182,22 +183,26 @@ class BedFrameWork : Managed
 
 	static void BreakOldSpawnBed(PlayerIdentity identity, vector pos)
 	{
-		if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
+		int CanBedBreak = BedFrameWork.BedClassNames.Get("DestroyBedAfterSpawn");
+		if ( CanBedBreak == 1 )
 		{
-			ref array<Object> Player_Bed = new array<Object>;
-			GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
-			
-			for ( int i = 0; i < Player_Bed.Count(); i++ )
+			if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 			{
-				Object bed = Player_Bed.Get( i );
-
-				//Print(bed);
-				//Print(bed.GetPosition().ToString(false));
-				//Print( BedFrameWork.StoredBeds.Get( identity.GetId() ) );
-				if ( BedFrameWork.BedClassNames.Get( bed.GetType() ) && bed.GetPosition().ToString(false) == BedFrameWork.StoredBeds.Get( identity.GetId() ).ToString(false) )
+				ref array<Object> Player_Bed = new array<Object>;
+				GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
+				
+				for ( int i = 0; i < Player_Bed.Count(); i++ )
 				{
-					Print("Found bed, deleting it!");
-					GetGame().ObjectDelete(bed);
+					Object bed = Player_Bed.Get( i );
+
+					//Print(bed);
+					//Print(bed.GetPosition().ToString(false));
+					//Print( BedFrameWork.StoredBeds.Get( identity.GetId() ) );
+					if ( BedFrameWork.BedClassNames.Get( bed.GetType() ) && bed.GetPosition().ToString(false) == BedFrameWork.StoredBeds.Get( identity.GetId() ).ToString(false) )
+					{
+						Print("Found bed, deleting it!");
+						GetGame().ObjectDelete(bed);
+					}
 				}
 			}
 		}

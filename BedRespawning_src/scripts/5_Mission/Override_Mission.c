@@ -13,9 +13,6 @@ modded class MissionServer
 
 		PlayerIdentity id = m_player.GetIdentity();
 		BedFrameWork.FixSpawningHeight( m_player, BedFrameWork.AttemptBedSpawn( id,m_player.GetPosition() ) );
-		if ( BedFrameWork.BedClassNames.Get("DestroyBedAfterSpawn") == 1 )
-		{
-			BedFrameWork.BreakOldSpawnBed( id, BedFrameWork.AttemptBedSpawn( id,m_player.GetPosition() ) );
-		}
+		BedFrameWork.BreakOldSpawnBed( id, BedFrameWork.AttemptBedSpawn( id,m_player.GetPosition() ) );
 	}
 }
