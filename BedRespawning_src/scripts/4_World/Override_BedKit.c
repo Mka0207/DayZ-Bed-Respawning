@@ -73,10 +73,10 @@ modded class ActionContinuousBase
 //OP_BaseItems support
 modded class TentBase extends ItemBase
 {
-	override void OnPlacementComplete( Man player )
+	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		string ent_type = GetType();
-		super.OnPlacementComplete( player );
+		super.OnPlacementComplete( player,position,orientation );
 		
 		if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
 		{
@@ -102,10 +102,10 @@ modded class TentBase extends ItemBase
 //Base_Storage support and rest cleanup.
 modded class ItemBase extends InventoryItem
 {
-	override void OnPlacementComplete( Man player )
+	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		Print("[ItemBase] OnPlacementComplete - Base_Storage FIX");
-		super.OnPlacementComplete(player);
+		super.OnPlacementComplete(player,position,orientation);
 		
 		string ent_type = GetType();
 
