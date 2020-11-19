@@ -60,10 +60,10 @@ modded class ActionContinuousBase
 
 			if ( BedFrameWork.BedClassNames.Get(bed.GetType()) && BedFrameWork.BedClassNames.Get(bed.GetType()) == 1 )
 			{
-				vector position = action_data.m_Player.GetLocalProjectionPosition();
+				vector pos = action_data.m_Player.GetLocalProjectionPosition();
 				PlayerIdentity pd = action_data.m_Player.GetIdentity();
 				
-				BedFrameWork.InsertBed( position, pd );
+				BedFrameWork.InsertBed( pos, pd );
 				BedFrameWork.SaveBedData();
 			}
 		}
@@ -83,10 +83,10 @@ modded class TentBase extends ItemBase
 			if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
-				vector position = player_base.GetLocalProjectionPosition();
+				vector pos = player_base.GetLocalProjectionPosition();
 				PlayerIdentity pd = player_base.GetIdentity();
 
-				BedFrameWork.InsertBed( position, pd );
+				BedFrameWork.InsertBed( pos, pd );
 				BedFrameWork.SaveBedData();
 			}
 		}
