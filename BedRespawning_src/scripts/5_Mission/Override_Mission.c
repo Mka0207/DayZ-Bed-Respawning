@@ -7,9 +7,9 @@ modded class MissionServer
 		if (!BedFrameWork.m_Loaded) { BedFrameWork.LoadBedData(); }
 	}
 
-	override void EquipCharacter()
+	override void EquipCharacter(MenuDefaultCharacterData char_data)
 	{
-		super.EquipCharacter();
+		super.EquipCharacter(char_data);
 
 		PlayerIdentity id = m_player.GetIdentity();
 		BedFrameWork.FixSpawningHeight( m_player, BedFrameWork.AttemptBedSpawn( id,m_player.GetPosition() ) );
