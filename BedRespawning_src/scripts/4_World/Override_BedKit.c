@@ -75,17 +75,20 @@ modded class TentBase extends ItemBase
 {
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
-		string ent_type = GetType();
 		super.OnPlacementComplete( player,position,orientation );
+		string ent_type = GetType();
 		
-		if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
+		if ( GetGame().IsServer() )
 		{
-			PlayerBase player_base = PlayerBase.Cast( player );
-			vector position = player_base.GetLocalProjectionPosition();
-			PlayerIdentity pd = player_base.GetIdentity();
+			if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
+			{
+				PlayerBase player_base = PlayerBase.Cast( player );
+				vector position = player_base.GetLocalProjectionPosition();
+				PlayerIdentity pd = player_base.GetIdentity();
 
-			BedFrameWork.InsertBed( position, pd );
-			BedFrameWork.SaveBedData();
+				BedFrameWork.InsertBed( position, pd );
+				BedFrameWork.SaveBedData();
+			}
 		}
 	}
 
@@ -104,19 +107,21 @@ modded class ItemBase extends InventoryItem
 {
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
-		Print("[ItemBase] OnPlacementComplete - Base_Storage FIX");
 		super.OnPlacementComplete(player,position,orientation);
 		
 		string ent_type = GetType();
 
-		if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
+		if ( GetGame().IsServer() )
 		{
-			PlayerBase player_base = PlayerBase.Cast( player );
-			vector position = player_base.GetLocalProjectionPosition();
-			PlayerIdentity pd = player_base.GetIdentity();
+			if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
+			{
+				PlayerBase player_base = PlayerBase.Cast( player );
+				vector position = player_base.GetLocalProjectionPosition();
+				PlayerIdentity pd = player_base.GetIdentity();
 
-			BedFrameWork.InsertBed( position, pd );
-			BedFrameWork.SaveBedData();
+				BedFrameWork.InsertBed( position, pd );
+				BedFrameWork.SaveBedData();
+			}
 		}
 	}
 
