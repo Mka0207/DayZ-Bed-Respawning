@@ -116,10 +116,10 @@ modded class ItemBase extends InventoryItem
 			if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
-				vector position = player_base.GetLocalProjectionPosition();
+				vector pos = player_base.GetLocalProjectionPosition();
 				PlayerIdentity pd = player_base.GetIdentity();
 
-				BedFrameWork.InsertBed( position, pd );
+				BedFrameWork.InsertBed( pos, pd );
 				BedFrameWork.SaveBedData();
 			}
 		}
