@@ -18,7 +18,7 @@
 }*/
 
 //Base Building Plus support
-modded class ActionPlaceObject
+/*modded class ActionPlaceObject
 {		
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
@@ -68,7 +68,7 @@ modded class ActionContinuousBase
 			}
 		}
 	}
-}
+}*/
 
 //OP_BaseItems support
 modded class TentBase extends ItemBase
@@ -80,14 +80,15 @@ modded class TentBase extends ItemBase
 		
 		if ( GetGame().IsServer() )
 		{
-			if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
+			if ( ent_type == "OP_SleepingBagBlue" || ent_type == "OP_SleepingBagBluePlacing" )
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
 				vector pos = player_base.GetLocalProjectionPosition();
 				PlayerIdentity pd = player_base.GetIdentity();
+				string guid = pd.GetId();
 
-				BedFrameWork.InsertBed( pos, pd );
-				BedFrameWork.SaveBedData();
+				ref BedData bed = new BedData(guid,pos);
+				BedFrameWork.InsertBed( bed );
 			}
 		}
 	}
@@ -95,17 +96,18 @@ modded class TentBase extends ItemBase
 	override void Pack( bool update_navmesh, bool init = false )
 	{			
 		super.Pack(update_navmesh,init);
-		if ( BedFrameWork.BedClassNames.Get(this.GetType()) && BedFrameWork.BedClassNames.Get(this.GetType()) == 1 )
+
+		/*if ( BedFrameWork.BedClassNames.Get(this.GetType()) && BedFrameWork.BedClassNames.Get(this.GetType()) == 1 )
 		{
 			BedFrameWork.RemoveBedDataByVector(this.GetPosition());
-		}
+		}*/
 	}
 }
 
 //Base_Storage support and rest cleanup.
 modded class ItemBase extends InventoryItem
 {
-	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	/*override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		super.OnPlacementComplete(player,position,orientation);
 		
@@ -123,74 +125,132 @@ modded class ItemBase extends InventoryItem
 				BedFrameWork.SaveBedData();
 			}
 		}
-	}
+	}*/
 
-	override void EEDelete(EntityAI parent)
+	/*override void EEDelete(EntityAI parent)
 	{
 		super.EEDelete(parent);
-
-		//Print( this.GetType() );
 
 		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "BBP_Bed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" || this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "Chub_Bed_UnPacked" )
 		{
 			BedFrameWork.RemoveBedDataByVector(this.GetPosition());
 		}
+	}*/
+}
+
+class BedData : BedFrameWork
+{
+	string m_BedOwner = "test";
+	vector m_BedPos = "1 0 1";
+	void BedData(string owner, vector pos)
+	{
+		m_BedOwner = owner;
+		m_BedPos = pos;
+	}
+	string GetOwner()
+	{
+		return m_BedOwner;
+	}
+	vector GetPos()
+	{
+		return m_BedPos;
 	}
 }
+
+class BedConfig
+{
+	static int DestroyBedAfterSpawn = 1;
+	static int EnableOPBaseItems_SleepingBags = 1;
+}
+
 
 class BedFrameWork : Managed
 {
 	static autoptr ref map<string,vector> StoredBeds = new map<string,vector>;
+	//static autoptr ref map<string,int> BedClassNames = new map<string,int>;
 
-	static autoptr ref map<string,int> BedClassNames = new map<string,int>;
+	//static bool m_Loaded = false;
+	
+	protected static string m_Folder = "$profile:BedRespawn2\\";
+	protected static string m_Config = m_Folder + "Config.json";
+	protected static string m_DataFolder = m_Folder + "PlayerData\\";
 
-	static bool m_Loaded = false;
-
-	static string TextFileName = "BedRespawn/BedData";
-
-	static string ConfigFileName = "BedRespawn/BedDataConfig";
-
-	static ref Timer m_DelayedSpawnFix;
+	static ref BedConfig m_BedConfig = new BedConfig;
 
 	void BedFrameWork()
 	{
-	}
-	void ~BedFrameWork()
-	{	
-	}
-	
-	static void InsertBed(vector bed, PlayerIdentity pd)
-	{
-		RemoveBedDataByID( pd.GetId() );
-		StoredBeds.Insert( pd.GetId(), bed );
 		
-		string msg = "[BedRespawning] Bed has been placed by ";
-		string name = pd.GetName();
+		Print("Created BedFrameWork Object");
+
+		//If the BedRespawn2 folder doesn't exist, then create it and create the Config.json file.
+		if ( FileExist(m_Folder) == 0 )
+		{
+			Print("[Bed-Respawn 2.0] '" + m_Folder + "' does not exist, creating directory!");
+            MakeDirectory(m_Folder);
+            JsonFileLoader<BedConfig>.JsonSaveFile(m_Config, m_BedConfig);
+        	Print(string.Format("[Bed-Respawn 2.0] saving config!"));
+		}
+
+		//If the playerdata folders dont exist, make them.
+		if ( FileExist(m_DataFolder) == 0 )
+		{
+			MakeDirectory(m_DataFolder);
+		} else {
+			
+		}
+	}
+	void ~BedFrameWork() {}
+
+	static void InsertBed( BedData data )
+	{
+		string msg = "[Bed-Respawn 2.0] Bed has been placed by ";
+		string name = data.GetOwner();
 		string ext_msg = " @ Location :";
 		
-		Print( msg + name + ext_msg + bed );
-	}
-
-	static void FixSpawningHeight( PlayerBase ply, vector Location )
-	{
-		ply.SetPosition( Location );
+		Print( msg + name + ext_msg + data.GetPos() );
+		
+		if ( FileExist(m_DataFolder) )
+		{
+			StoredBeds.Insert( data.GetOwner(), data.GetPos() );
+			string player_id = m_DataFolder + name + ".json"; 
+			JsonFileLoader<BedData>.JsonSaveFile(player_id, data);
+		}
+		Print(data);
 	}
 
 	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos, bool DestroyOldBed = true  )
 	{
-		if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
+		if ( FileExist(m_DataFolder) && BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 		{
-			DefaultPos = BedFrameWork.StoredBeds.Get( identity.GetId() );
+			string saved_bed = m_DataFolder + identity.GetId() + ".json"; 
+			if ( FileExist(saved_bed) )
+			{
+				DefaultPos = BedFrameWork.StoredBeds.Get( identity.GetId() );
+			}
 		}
 
 		return DefaultPos;
 	}
 
+	static void FixSpawningHeight( PlayerBase ply, vector Location  )
+	{
+		ply.SetPosition( Location );
+	}
+
 	static void BreakOldSpawnBed(PlayerIdentity identity, vector pos)
 	{
-		int CanBedBreak = BedFrameWork.BedClassNames.Get("DestroyBedAfterSpawn");
-		if ( CanBedBreak == 1 )
+		if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
 		{
+			//Delete the JSON file containing the bed data.
+			if ( FileExist(m_DataFolder) )
+			{
+				string saved_bed = m_DataFolder + identity.GetId() + ".json"; 
+				if ( FileExist(saved_bed) )
+				{
+					DeleteFile(saved_bed)
+				}
+			}
+			//Use the cached data to delete the bed.
 			if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 			{
 				ref array<Object> Player_Bed = new array<Object>;
@@ -203,98 +263,21 @@ class BedFrameWork : Managed
 					//Print(bed);
 					//Print(bed.GetPosition().ToString(false));
 					//Print( BedFrameWork.StoredBeds.Get( identity.GetId() ) );
-					if ( BedFrameWork.BedClassNames.Get( bed.GetType() ) && bed.GetPosition().ToString(false) == BedFrameWork.StoredBeds.Get( identity.GetId() ).ToString(false) )
+
+					//BedFrameWork.BedClassNames.Get( bed.GetType() )
+					if ( bed.GetType() == "OP_SleepingBagBlue" && bed.GetPosition().ToString(false) == BedFrameWork.StoredBeds.Get( identity.GetId() ).ToString(false) )
 					{
 						Print("Found bed, deleting it!");
 						GetGame().ObjectDelete(bed);
 					}
 				}
+
+				//RemoveBedDataByID( identity.GetId() );
 			}
 		}
 	}
-	
-	static void SaveBedData()
-	{
-		FileHandle file = OpenFile("$profile:"+TextFileName+".txt", FileMode.WRITE);
-		if (file != 0)
-		{
-			int index = 0;
-			foreach(string k, vector a: StoredBeds)
-			{
-				index++;
-				string concat = index.ToString() + " " + k + " " + a.ToString(false);
-				FPrintln(file, concat );
-			}
 
-			CloseFile(file);
-		}
-	}
-
-	static void LoadBedData()
-	{
-		FileHandle file_handle = OpenFile("$profile:"+TextFileName+".txt", FileMode.READ);
-		if (file_handle != 0)
-		{
-			string line_content;
-
-			while ( FGets( file_handle,  line_content ) > 0 )
-			{
-				//Print(line_content);
-				array<string> strgs = new array<string>;
-
-				line_content.Split(" ", strgs);
-
-				string stored_id = strgs.Get(1);
-				string stored_index = strgs.Get(0);
-
-				float stored_vect_x = strgs.Get(2).ToFloat();
-				float stored_vect_y = strgs.Get(3).ToFloat();
-				float stored_vect_z = strgs.Get(4).ToFloat();
-
-				//Print(stored_vect_x);
-				//Print(stored_vect_y);
-				//Print(stored_vect_z);
-
-				vector BedPos = Vector(stored_vect_x, stored_vect_y, stored_vect_z);
-				StoredBeds.Insert( stored_id, BedPos );
-				
-				//Print( stored_index );
-				//Print( stored_id );
-				//Print( BedPos );
-			}
-
-			Print("[BedRespawning] Loaded Data!");
-
-			CloseFile(file_handle);
-			m_Loaded = true;
-		}
-
-		FileHandle file_handle_config = OpenFile("$profile:"+ConfigFileName+".txt", FileMode.READ);
-		if (file_handle_config != 0)
-		{
-			string line_content_class;
-
-			while ( FGets( file_handle_config,  line_content_class ) > 0 )
-			{
-				array<string> strgs_config = new array<string>;
-				line_content_class.Split(" ", strgs_config);
-
-				string stored_class = strgs_config.Get(0);
-				int stored_status = strgs_config.Get(1).ToInt();
-
-				//Print(stored_class);
-				//Print(stored_status);
-				BedClassNames.Insert(stored_class,stored_status);
-			}
-
-			Print("[BedRespawning] Loaded Config!");
-
-			CloseFile(file_handle_config);
-		}
-		
-	}
-
-	static void RemoveBedDataByID( string guid )
+	/*static void RemoveBedDataByID( string guid )
 	{
 		foreach(string k, vector a: BedFrameWork.StoredBeds)
 		{
@@ -307,7 +290,17 @@ class BedFrameWork : Managed
 				Print( msg + ext_msg + a );
 			}
 		}
-	}
+
+		//Delete the JSON file containing the bed data.
+		if ( FileExist(m_DataFolder) )
+		{
+			string saved_bed = m_DataFolder + guid + ".json"; 
+			if ( FileExist(saved_bed) )
+			{
+				DeleteFile(saved_bed)
+			}
+		}
+	}*/
 
 	static void RemoveBedDataByVector( vector pos )
 	{
@@ -323,8 +316,31 @@ class BedFrameWork : Managed
 				string ext_msg = " @ Location :";
 				
 				Print( msg + ext_msg + a );
-				BedFrameWork.SaveBedData();
 			}
 		}
 	}
+
+	/*static array<string> FindFilesInDirectory(string folder)
+	{
+		array<string> files = {};
+
+		string fileName;
+		FileAttr fileAttr;
+		FindFileHandle findFileHandle = FindFile(folder + "*", fileName, fileAttr, 0);
+
+		if (findFileHandle)
+		{
+			if (fileName.Length() > 0 && !(fileAttr & FileAttr.DIRECTORY))
+				files.Insert(fileName);
+			
+			while (FindNextFile(findFileHandle, fileName, fileAttr))
+			{
+				if (fileName.Length() > 0 && !(fileAttr & FileAttr.DIRECTORY))
+					files.Insert(fileName);
+			}
+		}
+
+		CloseFindFile(findFileHandle);
+		return files;
+	}*/
 }
