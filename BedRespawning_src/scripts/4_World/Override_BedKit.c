@@ -44,30 +44,6 @@
 			}
 		}
 	}
-}
-
-//MunghardsItempack support
-modded class ActionContinuousBase
-{
-	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		Print("[ActionContinuousBase] OnFinishProgressServer - Mung FIX");
-		super.OnFinishProgressServer(action_data);
-		if ( m_CommandUID == DayZPlayerConstants.CMD_ACTIONFB_CRAFTING )
-		{
-			Object bed = action_data.m_Target.GetObject();
-			//Print( bed.GetType() );
-
-			if ( BedFrameWork.BedClassNames.Get(bed.GetType()) && BedFrameWork.BedClassNames.Get(bed.GetType()) == 1 )
-			{
-				vector pos = action_data.m_Player.GetLocalProjectionPosition();
-				PlayerIdentity pd = action_data.m_Player.GetIdentity();
-				
-				BedFrameWork.InsertBed( pos, pd );
-				BedFrameWork.SaveBedData();
-			}
-		}
-	}
 }*/
 
 //OP_BaseItems support
@@ -140,40 +116,6 @@ modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 	}
 }
 
-//Base_Storage support and rest cleanup.
-modded class ItemBase extends InventoryItem
-{
-	/*override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
-	{
-		super.OnPlacementComplete(player,position,orientation);
-		
-		string ent_type = GetType();
-
-		if ( GetGame().IsServer() )
-		{
-			if ( BedFrameWork.BedClassNames.Get(ent_type) && BedFrameWork.BedClassNames.Get(ent_type) == 1 )
-			{
-				PlayerBase player_base = PlayerBase.Cast( player );
-				vector pos = player_base.GetLocalProjectionPosition();
-				PlayerIdentity pd = player_base.GetIdentity();
-
-				BedFrameWork.InsertBed( pos, pd );
-				BedFrameWork.SaveBedData();
-			}
-		}
-	}*/
-
-	/*override void EEDelete(EntityAI parent)
-	{
-		super.EEDelete(parent);
-
-		if ( this.GetType() == "Base_SingleBed" || this.GetType() == "BBP_Bed" || this.GetType() == "sleepingbag_red_mung_Deployed" || this.GetType() == "sleepingbag_blue_mung_Deployed" || this.GetType() == "sleepingbag_green_mung_Deployed" || this.GetType() == "sleepingbag_yellow_mung_Deployed" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" || this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "Chub_Bed_UnPacked" )
-		{
-			BedFrameWork.RemoveBedDataByVector(this.GetPosition());
-		}
-	}*/
-}
-
 class BedData : BedFrameWork
 {
 	string m_BedOwner = "test";
@@ -195,8 +137,8 @@ class BedData : BedFrameWork
 
 class BedConfig
 {
-	static const int DestroyBedAfterSpawn = 1;
-	static const int EnableOPBaseItems_SleepingBags = 1;
+	int DestroyBedAfterSpawn = 1;
+	int EnableOPBaseItems_SleepingBags = 1;
 }
 
 
@@ -294,43 +236,30 @@ class BedFrameWork : Managed
 
 	static void BreakOldSpawnBed(PlayerIdentity identity, vector pos)
 	{
-		
-		//if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
-		//{
-			//Delete the JSON file containing the bed data.
-			//RemoveRespawnData( identity.GetId() );
-
-			/*if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
+		if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
+		{
+			ref array<Object> Player_Bed = new array<Object>;
+			GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
+			for ( int i = 0; i < Player_Bed.Count(); i++ )
 			{
-				BedFrameWork.StoredBeds.Remove( identity.GetId() );
-			}*/
-
-			//Use the cached data to delete the bed.
-			//if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
-			//{
-				ref array<Object> Player_Bed = new array<Object>;
-				GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
-				
-				for ( int i = 0; i < Player_Bed.Count(); i++ )
+				Object bed = Player_Bed.Get( i );
+				//Print(bed.IsItemBase());
+				//Print(bed.IsItemTent());
+				if ( bed.IsItemBase() )
 				{
-					Object bed = Player_Bed.Get( i );
-
-					//Print(bed);
-					//Print(bed.GetPosition().ToString(false));
-					//Print( BedFrameWork.StoredBeds.Get( identity.GetId() ) );
-
-					//BedFrameWork.BedClassNames.Get( bed.GetType() )
-					
-					if ( bed.GetType() == "OP_SleepingBagBlue" && bed.GetPosition().ToString(false) == pos.ToString(false) )
+					//Print("Object is ItemBase");
+					if ( bed.IsInherited(OP_SleepingBagColorbase) )
 					{
-						Print("Found bed, deleting it!");
-						GetGame().ObjectDelete(bed);
+						//Print("Object is inherited from OP_SleepingBagColorbase")
+						if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
+						{
+							//Print("Found bed, deleting it!");
+							GetGame().ObjectDelete(bed);
+						}
 					}
 				}
-
-				//RemoveBedDataByID( identity.GetId() );
-			//}
-		//}
+			}
+		}
 
 		RemoveRespawnData( identity.GetId() );
 	}
@@ -352,28 +281,4 @@ class BedFrameWork : Managed
 			}
 		}
 	}
-
-	/*static array<string> FindFilesInDirectory(string folder)
-	{
-		array<string> files = {};
-
-		string fileName;
-		FileAttr fileAttr;
-		FindFileHandle findFileHandle = FindFile(folder + "*", fileName, fileAttr, 0);
-
-		if (findFileHandle)
-		{
-			if (fileName.Length() > 0 && !(fileAttr & FileAttr.DIRECTORY))
-				files.Insert(fileName);
-			
-			while (FindNextFile(findFileHandle, fileName, fileAttr))
-			{
-				if (fileName.Length() > 0 && !(fileAttr & FileAttr.DIRECTORY))
-					files.Insert(fileName);
-			}
-		}
-
-		CloseFindFile(findFileHandle);
-		return files;
-	}*/
 }
