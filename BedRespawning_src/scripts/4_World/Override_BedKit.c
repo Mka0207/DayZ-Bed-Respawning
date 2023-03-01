@@ -195,8 +195,8 @@ class BedData : BedFrameWork
 
 class BedConfig
 {
-	int DestroyBedAfterSpawn = 1;
-	int EnableOPBaseItems_SleepingBags = 1;
+	static const int DestroyBedAfterSpawn = 1;
+	static const int EnableOPBaseItems_SleepingBags = 1;
 }
 
 
@@ -205,7 +205,7 @@ class BedFrameWork : Managed
 	static autoptr ref map<string,vector> StoredBeds = new map<string,vector>;
 	//static autoptr ref map<string,int> BedClassNames = new map<string,int>;
 
-	//static bool m_Loaded = false;
+	static bool m_Loaded = false;
 	
 	protected static string m_Folder = "$profile:BedRespawn2\\";
 	protected static string m_Config = m_Folder + "Config.json";
@@ -215,6 +215,7 @@ class BedFrameWork : Managed
 
 	void BedFrameWork()
 	{
+		m_Loaded = true;
 		
 		Print("Created BedFrameWork Object");
 
@@ -266,6 +267,8 @@ class BedFrameWork : Managed
 				StoredBeds.Insert( bed.GetOwner(), bed.GetPos() );
 
 				DefaultPos = bed.GetPos();
+
+				BreakOldSpawnBed(identity, DefaultPos)
 			}
 		}
 
@@ -291,19 +294,20 @@ class BedFrameWork : Managed
 
 	static void BreakOldSpawnBed(PlayerIdentity identity, vector pos)
 	{
+		
 		//if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
 		//{
 			//Delete the JSON file containing the bed data.
-			RemoveRespawnData( identity.GetId() );
+			//RemoveRespawnData( identity.GetId() );
 
-			if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
+			/*if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 			{
 				BedFrameWork.StoredBeds.Remove( identity.GetId() );
-			}
+			}*/
 
 			//Use the cached data to delete the bed.
-			if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
-			{
+			//if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
+			//{
 				ref array<Object> Player_Bed = new array<Object>;
 				GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
 				
@@ -316,7 +320,8 @@ class BedFrameWork : Managed
 					//Print( BedFrameWork.StoredBeds.Get( identity.GetId() ) );
 
 					//BedFrameWork.BedClassNames.Get( bed.GetType() )
-					if ( bed.GetType() == "OP_SleepingBagBlue" && bed.GetPosition().ToString(false) == BedFrameWork.StoredBeds.Get( identity.GetId() ).ToString(false) )
+					
+					if ( bed.GetType() == "OP_SleepingBagBlue" && bed.GetPosition().ToString(false) == pos.ToString(false) )
 					{
 						Print("Found bed, deleting it!");
 						GetGame().ObjectDelete(bed);
@@ -324,8 +329,10 @@ class BedFrameWork : Managed
 				}
 
 				//RemoveBedDataByID( identity.GetId() );
-			}
+			//}
 		//}
+
+		RemoveRespawnData( identity.GetId() );
 	}
 
 	static void RemoveBedDataByVector( vector pos )
