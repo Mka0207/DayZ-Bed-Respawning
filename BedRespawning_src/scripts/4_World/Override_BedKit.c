@@ -71,7 +71,7 @@ modded class ActionContinuousBase
 }*/
 
 //OP_BaseItems support
-modded class OP_SleepingBagColorbase extends ItemBase
+modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 {
 	string m_OwnerID;
 
@@ -88,8 +88,7 @@ modded class OP_SleepingBagColorbase extends ItemBase
 			string guid = pd.GetId();
 
 			m_OwnerID = guid;
-
-			Print(m_OwnerID);
+			//Print(m_OwnerID);
 
 			ref BedData bed = new BedData(guid,pos);
 			BedFrameWork.InsertBed( bed );
@@ -105,7 +104,8 @@ modded class OP_SleepingBagColorbase extends ItemBase
 
 	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
-		super.OnStoreLoad(ctx,version);
+		if (!super.OnStoreLoad(ctx, version))
+        return false;
 
 		// read data loaded from game database (format and order of reading must be the same as writing!)
 		if ( !ctx.Read(m_OwnerID) )
@@ -120,10 +120,23 @@ modded class OP_SleepingBagColorbase extends ItemBase
 
 		Print("Ran Pack for Sleeing Bag");
 
+		Print(m_OwnerID);
+
+		BedFrameWork.RemoveRespawnData( m_OwnerID );
+
 		/*if ( BedFrameWork.BedClassNames.Get(this.GetType()) && BedFrameWork.BedClassNames.Get(this.GetType()) == 1 )
 		{
 			BedFrameWork.RemoveBedDataByVector(this.GetPosition());
 		}*/
+	}
+
+	override void EEDelete(EntityAI parent)
+	{
+		super.EEDelete(parent);
+
+		Print("Ran EEDelete for sleeping bag!");
+
+		BedFrameWork.RemoveRespawnData( m_OwnerID );
 	}
 }
 
@@ -182,8 +195,8 @@ class BedData : BedFrameWork
 
 class BedConfig
 {
-	static int DestroyBedAfterSpawn = 1;
-	static int EnableOPBaseItems_SleepingBags = 1;
+	int DestroyBedAfterSpawn = 1;
+	int EnableOPBaseItems_SleepingBags = 1;
 }
 
 
@@ -243,12 +256,16 @@ class BedFrameWork : Managed
 
 	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos, bool DestroyOldBed = true  )
 	{
-		if ( FileExist(m_DataFolder) && BedFrameWork.StoredBeds.Get( identity.GetId() ) )
+		if ( FileExist(m_DataFolder) )
 		{
 			string saved_bed = m_DataFolder + identity.GetId() + ".json"; 
 			if ( FileExist(saved_bed) )
 			{
-				DefaultPos = BedFrameWork.StoredBeds.Get( identity.GetId() );
+				BedData bed = new BedData("na","1 0 1");
+				JsonFileLoader<BedData>.JsonLoadFile(saved_bed, bed);
+				StoredBeds.Insert( bed.GetOwner(), bed.GetPos() );
+
+				DefaultPos = bed.GetPos();
 			}
 		}
 
@@ -260,19 +277,30 @@ class BedFrameWork : Managed
 		ply.SetPosition( Location );
 	}
 
+	static void RemoveRespawnData( string guid )
+	{
+		if ( FileExist(m_DataFolder) )
+		{
+			string saved_bed = m_DataFolder + guid + ".json"; 
+			if ( FileExist(saved_bed) )
+			{
+				DeleteFile(saved_bed)
+			}
+		}
+	}
+
 	static void BreakOldSpawnBed(PlayerIdentity identity, vector pos)
 	{
-		if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
-		{
+		//if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
+		//{
 			//Delete the JSON file containing the bed data.
-			if ( FileExist(m_DataFolder) )
+			RemoveRespawnData( identity.GetId() );
+
+			if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 			{
-				string saved_bed = m_DataFolder + identity.GetId() + ".json"; 
-				if ( FileExist(saved_bed) )
-				{
-					DeleteFile(saved_bed)
-				}
+				BedFrameWork.StoredBeds.Remove( identity.GetId() );
 			}
+
 			//Use the cached data to delete the bed.
 			if ( BedFrameWork.StoredBeds.Get( identity.GetId() ) )
 			{
@@ -297,33 +325,8 @@ class BedFrameWork : Managed
 
 				//RemoveBedDataByID( identity.GetId() );
 			}
-		}
+		//}
 	}
-
-	/*static void RemoveBedDataByID( string guid )
-	{
-		foreach(string k, vector a: BedFrameWork.StoredBeds)
-		{
-			if ( k == guid )
-			{
-				BedFrameWork.StoredBeds.Remove(k);
-				string msg = "[BedRespawning] Bed deleted ";
-				string ext_msg = " @ Location :";
-				
-				Print( msg + ext_msg + a );
-			}
-		}
-
-		//Delete the JSON file containing the bed data.
-		if ( FileExist(m_DataFolder) )
-		{
-			string saved_bed = m_DataFolder + guid + ".json"; 
-			if ( FileExist(saved_bed) )
-			{
-				DeleteFile(saved_bed)
-			}
-		}
-	}*/
 
 	static void RemoveBedDataByVector( vector pos )
 	{
