@@ -9,9 +9,9 @@ modded class MissionServer
 		/*if (!BedFrameWork.m_Loaded) { 
 			BedFrameWork.LoadBedData(); 
 		}*/
-		if ( m_BedFrameWork && !m_BedFrameWork.m_Loaded) {
+		//if ( m_BedFrameWork && !m_BedFrameWork.m_Loaded) {
 			m_BedFrameWork = new BedFrameWork;
-		}
+		//}
 	}
 
 	override void EquipCharacter(MenuDefaultCharacterData char_data)

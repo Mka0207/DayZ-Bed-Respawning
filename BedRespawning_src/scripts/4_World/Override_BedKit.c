@@ -167,15 +167,13 @@ class BedFrameWork : Managed
 			Print("[Bed-Respawn 2.0] '" + m_Folder + "' does not exist, creating directory!");
             MakeDirectory(m_Folder);
             JsonFileLoader<BedConfig>.JsonSaveFile(m_Config, m_BedConfig);
-        	Print(string.Format("[Bed-Respawn 2.0] saving config!"));
+        	Print("[Bed-Respawn 2.0] saving config!");
 		}
 
 		//If the playerdata folders dont exist, make them.
 		if ( FileExist(m_DataFolder) == 0 )
 		{
 			MakeDirectory(m_DataFolder);
-		} else {
-			
 		}
 	}
 	void ~BedFrameWork() {}
@@ -210,7 +208,7 @@ class BedFrameWork : Managed
 
 				DefaultPos = bed.GetPos();
 
-				BreakOldSpawnBed(identity, DefaultPos)
+				BreakOldSpawnBed(identity, DefaultPos);
 			}
 		}
 
@@ -229,7 +227,7 @@ class BedFrameWork : Managed
 			string saved_bed = m_DataFolder + guid + ".json"; 
 			if ( FileExist(saved_bed) )
 			{
-				DeleteFile(saved_bed)
+				DeleteFile(saved_bed);
 			}
 		}
 	}
