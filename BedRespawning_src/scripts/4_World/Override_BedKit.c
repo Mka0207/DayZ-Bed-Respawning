@@ -71,8 +71,10 @@ modded class ActionContinuousBase
 }*/
 
 //OP_BaseItems support
-modded class TentBase extends ItemBase
+modded class OP_SleepingBagColorbase extends ItemBase
 {
+	string m_OwnerID;
+
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		super.OnPlacementComplete( player,position,orientation );
@@ -80,22 +82,43 @@ modded class TentBase extends ItemBase
 		
 		if ( GetGame().IsServer() )
 		{
-			if ( ent_type == "OP_SleepingBagBlue" || ent_type == "OP_SleepingBagBluePlacing" )
-			{
-				PlayerBase player_base = PlayerBase.Cast( player );
-				vector pos = player_base.GetLocalProjectionPosition();
-				PlayerIdentity pd = player_base.GetIdentity();
-				string guid = pd.GetId();
+			PlayerBase player_base = PlayerBase.Cast( player );
+			vector pos = player_base.GetLocalProjectionPosition();
+			PlayerIdentity pd = player_base.GetIdentity();
+			string guid = pd.GetId();
 
-				ref BedData bed = new BedData(guid,pos);
-				BedFrameWork.InsertBed( bed );
-			}
+			m_OwnerID = guid;
+
+			Print(m_OwnerID);
+
+			ref BedData bed = new BedData(guid,pos);
+			BedFrameWork.InsertBed( bed );
 		}
+	}
+
+	override void OnStoreSave(ParamsWriteContext ctx)
+	{
+		super.OnStoreSave(ctx);
+
+		ctx.Write(m_OwnerID);
+	}
+
+	override void OnStoreLoad(ParamsReadContext ctx, int version)
+	{
+		super.OnStoreLoad(ctx,version);
+
+		// read data loaded from game database (format and order of reading must be the same as writing!)
+		if ( !ctx.Read(m_OwnerID) )
+			return false;
+
+		return true;
 	}
 
 	override void Pack( bool update_navmesh, bool init = false )
 	{			
 		super.Pack(update_navmesh,init);
+
+		Print("Ran Pack for Sleeing Bag");
 
 		/*if ( BedFrameWork.BedClassNames.Get(this.GetType()) && BedFrameWork.BedClassNames.Get(this.GetType()) == 1 )
 		{
