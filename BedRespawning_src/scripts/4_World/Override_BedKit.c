@@ -96,24 +96,21 @@ modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 
 		Print("Ran Pack for Sleeing Bag");
 
-		Print(m_OwnerID);
-
-		BedFrameWork.RemoveRespawnData( m_OwnerID );
-
-		/*if ( BedFrameWork.BedClassNames.Get(this.GetType()) && BedFrameWork.BedClassNames.Get(this.GetType()) == 1 )
+		if ( m_OwnerID != "" )
 		{
-			BedFrameWork.RemoveBedDataByVector(this.GetPosition());
-		}*/
+			Print(this.GetType());
+			BedFrameWork.RemoveRespawnData( m_OwnerID );
+		}
 	}
 
-	override void EEDelete(EntityAI parent)
+	/*override void EEDelete(EntityAI parent)
 	{
 		super.EEDelete(parent);
 
 		Print("Ran EEDelete for sleeping bag!");
 
 		BedFrameWork.RemoveRespawnData( m_OwnerID );
-	}
+	}*/
 }
 
 class BedData : BedFrameWork
@@ -147,7 +144,7 @@ class BedFrameWork : Managed
 	static autoptr ref map<string,vector> StoredBeds = new map<string,vector>;
 	//static autoptr ref map<string,int> BedClassNames = new map<string,int>;
 
-	static bool m_Loaded = false;
+	protected static bool m_Loaded = false;
 	
 	protected static string m_Folder = "$profile:BedRespawn2\\";
 	protected static string m_Config = m_Folder + "Config.json";
@@ -157,26 +154,45 @@ class BedFrameWork : Managed
 
 	void BedFrameWork()
 	{
-		m_Loaded = true;
+		if ( m_Loaded ) return;
 		
-		Print("Created BedFrameWork Object");
+		Print("[Bed-Respawn 2.0] Created BedFrameWork Instance!");
 
 		//If the BedRespawn2 folder doesn't exist, then create it and create the Config.json file.
 		if ( FileExist(m_Folder) == 0 )
 		{
 			Print("[Bed-Respawn 2.0] '" + m_Folder + "' does not exist, creating directory!");
             MakeDirectory(m_Folder);
-            JsonFileLoader<BedConfig>.JsonSaveFile(m_Config, m_BedConfig);
-        	Print("[Bed-Respawn 2.0] saving config!");
+			LoadConfig();
+			CreateDataFolder();
+		} else {
+			LoadConfig();
+			CreateDataFolder();
 		}
+		
+		m_Loaded = true;
+	}
+	void ~BedFrameWork() {}
 
-		//If the playerdata folders dont exist, make them.
+	static void LoadConfig()
+	{
+		if ( FileExist(m_Config) == 0 )
+		{
+			Print("[Bed-Respawn 2.0] no config file found! creating...");
+			JsonFileLoader<BedConfig>.JsonSaveFile(m_Config, m_BedConfig);
+		} else {
+			Print("[Bed-Respawn 2.0] loading prexisting config file.");
+			JsonFileLoader<BedConfig>.JsonLoadFile(m_Config, m_BedConfig);
+		}
+	}
+
+	static void CreateDataFolder()
+	{
 		if ( FileExist(m_DataFolder) == 0 )
 		{
 			MakeDirectory(m_DataFolder);
 		}
 	}
-	void ~BedFrameWork() {}
 
 	static void InsertBed( BedData data )
 	{
@@ -204,8 +220,10 @@ class BedFrameWork : Managed
 			{
 				BedData bed = new BedData("na","1 0 1");
 				JsonFileLoader<BedData>.JsonLoadFile(saved_bed, bed);
-				StoredBeds.Insert( bed.GetOwner(), bed.GetPos() );
-
+				if ( StoredBeds.Get( bed.GetOwner() ) )
+				{
+					StoredBeds.Insert( bed.GetOwner(), bed.GetPos() );
+				}
 				DefaultPos = bed.GetPos();
 
 				BreakOldSpawnBed(identity, DefaultPos);
@@ -227,6 +245,7 @@ class BedFrameWork : Managed
 			string saved_bed = m_DataFolder + guid + ".json"; 
 			if ( FileExist(saved_bed) )
 			{
+				Print("Cleared JSON Bed Data for " + guid);
 				DeleteFile(saved_bed);
 			}
 		}
@@ -257,26 +276,8 @@ class BedFrameWork : Managed
 					}
 				}
 			}
-		}
 
-		RemoveRespawnData( identity.GetId() );
-	}
-
-	static void RemoveBedDataByVector( vector pos )
-	{
-		foreach(string k, vector a: BedFrameWork.StoredBeds)
-		{
-			string BedPos = pos.ToString(false);
-			string OldBedPos = a.ToString(false);
-
-			if ( OldBedPos == BedPos )
-			{
-				BedFrameWork.StoredBeds.Remove(k);
-				string msg = "[BedRespawning] Bed deleted ";
-				string ext_msg = " @ Location :";
-				
-				Print( msg + ext_msg + a );
-			}
+			RemoveRespawnData( identity.GetId() );
 		}
 	}
 }
