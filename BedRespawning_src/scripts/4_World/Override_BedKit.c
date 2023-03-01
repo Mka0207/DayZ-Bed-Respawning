@@ -103,7 +103,7 @@ modded class OP_SleepingBagColorbase extends ItemBase
 		ctx.Write(m_OwnerID);
 	}
 
-	override void OnStoreLoad(ParamsReadContext ctx, int version)
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
 	{
 		super.OnStoreLoad(ctx,version);
 
