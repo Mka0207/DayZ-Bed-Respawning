@@ -54,8 +54,7 @@ modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		super.OnPlacementComplete( player,position,orientation );
-		string ent_type = GetType();
-		
+
 		if ( GetGame().IsServer() )
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
@@ -64,7 +63,6 @@ modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 			string guid = pd.GetId();
 
 			m_OwnerID = guid;
-			//Print(m_OwnerID);
 
 			ref BedData bed = new BedData(guid,pos);
 			BedFrameWork.InsertBed( bed );
@@ -91,26 +89,34 @@ modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 	}
 
 	override void Pack( bool update_navmesh, bool init = false )
-	{			
-		super.Pack(update_navmesh,init);
-
-		Print("Ran Pack for Sleeing Bag");
-
-		if ( m_OwnerID != "" )
+	{		
+		if ( GetGame().IsServer() )
 		{
-			Print(this.GetType());
-			BedFrameWork.RemoveRespawnData( m_OwnerID );
+			if ( GetState() == PITCHED && m_OwnerID != "" )
+			{
+				Print("[Bed-Respawn 2.0] Ran Pack for Sleeing Bag!");
+				BedFrameWork.RemoveRespawnData( m_OwnerID );
+			}
 		}
+
+		super.Pack(update_navmesh,init);
 	}
 
-	/*override void EEDelete(EntityAI parent)
+	override void EEDelete(EntityAI parent)
 	{
 		super.EEDelete(parent);
 
-		Print("Ran EEDelete for sleeping bag!");
+		//if ( m_IsHologram ) return;
 
-		BedFrameWork.RemoveRespawnData( m_OwnerID );
-	}*/
+		if ( GetGame().IsServer() )
+		{
+			if ( GetState() == PITCHED && m_OwnerID != "" )
+			{
+				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
+				BedFrameWork.RemoveRespawnData( m_OwnerID );
+			}
+		}
+	}
 }
 
 class BedData : BedFrameWork
@@ -245,7 +251,7 @@ class BedFrameWork : Managed
 			string saved_bed = m_DataFolder + guid + ".json"; 
 			if ( FileExist(saved_bed) )
 			{
-				Print("Cleared JSON Bed Data for " + guid);
+				Print("[Bed-Respawn 2.0] Cleared JSON Bed Data for " + guid);
 				DeleteFile(saved_bed);
 			}
 		}
