@@ -172,7 +172,6 @@ class BedData : BedFrameWork
 class BedConfig
 {
 	int MaxRespawnsBeforeRemoval = 0;
-	int EnableOPBaseItems_SleepingBags = 1;
 	int BedRespawnTimeMinutes = 45;
 }
 
@@ -259,7 +258,7 @@ class BedFrameWork : Managed
 				if ( m_BedConfig.MaxRespawnsBeforeRemoval > 0 )
 				{
 					bed.SetUsesLeft( Math.Clamp( bed.GetUsesLeft() - 1, 0, m_BedConfig.MaxRespawnsBeforeRemoval ) )
-					if ( bed.GetUsesLeft() <= 0 )
+					if ( bed.GetUsesLeft() <= 1 )
 					{
 						BreakOldSpawnBed(identity, m_SpawnPos);
 					}
