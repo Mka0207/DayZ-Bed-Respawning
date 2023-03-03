@@ -65,7 +65,7 @@ modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 
 			if ( BedFrameWork.m_BedConfig.EnableBagCoolDown == 1 )
 			{
-				player_base.RPCSingleParam( ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>( "Bed-Respawn Cooldown after Death = "+BedFrameWork.m_BedConfig.BedRespawnTimeMins+" Minutes." ), true, pd );
+				player_base.RPCSingleParam( ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>( "Bed-Respawn Cooldown after Death = "+BedFrameWork.m_BedConfig.BedRespawnTimeMinutes+" Minutes." ), true, pd );
 			}
 
 			ref BedData bed = new BedData(m_OwnerID,pos,0);
@@ -159,7 +159,7 @@ class BedConfig
 	int DestroyBedAfterSpawn = 1;
 	int EnableOPBaseItems_SleepingBags = 1;
 	int EnableBagCoolDown = 1;
-	int BedRespawnTimeMins = 45;
+	int BedRespawnTimeMinutes = 45;
 }
 
 class BedFrameWork : Managed
@@ -248,7 +248,7 @@ class BedFrameWork : Managed
 				if ( m_BedConfig.EnableBagCoolDown == 1 )
 				{
 					
-					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMins * 60 ) );
+					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes * 60 ) );
 					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
 				}
 
