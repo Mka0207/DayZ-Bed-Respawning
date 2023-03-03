@@ -59,12 +59,16 @@ modded class OP_SleepingBagColorbase //modded class TentBase extends ItemBase
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
 			vector pos = player_base.GetLocalProjectionPosition();
+
 			PlayerIdentity pd = player_base.GetIdentity();
-			string guid = pd.GetId();
+			m_OwnerID = pd.GetId();
 
-			m_OwnerID = guid;
+			if ( BedFrameWork.m_BedConfig.EnableBagCoolDown == 1 )
+			{
+				player_base.RPCSingleParam( ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>( "Bed-Respawn Cooldown after Death = "+BedFrameWork.m_BedConfig.BedRespawnTimeMins+" Minutes." ), true, pd );
+			}
 
-			ref BedData bed = new BedData(guid,pos);
+			ref BedData bed = new BedData(m_OwnerID,pos,0);
 			BedFrameWork.InsertBed( bed );
 		}
 	}
@@ -123,10 +127,13 @@ class BedData : BedFrameWork
 {
 	string m_BedOwner = "test";
 	vector m_BedPos = "1 0 1";
-	void BedData(string owner, vector pos)
+	int m_RespawnTime = 0;
+
+	void BedData(string owner, vector pos, int time)
 	{
 		m_BedOwner = owner;
 		m_BedPos = pos;
+		m_RespawnTime = time;
 	}
 	string GetOwner()
 	{
@@ -136,26 +143,31 @@ class BedData : BedFrameWork
 	{
 		return m_BedPos;
 	}
+	int GetRespawnTime()
+	{
+		return m_RespawnTime;
+	}
+
+	void SetRespawnTime(int time)
+	{
+		m_RespawnTime = time;
+	}
 }
 
 class BedConfig
 {
 	int DestroyBedAfterSpawn = 1;
 	int EnableOPBaseItems_SleepingBags = 1;
+	int EnableBagCoolDown = 1;
+	int BedRespawnTimeMins = 45;
 }
-
 
 class BedFrameWork : Managed
 {
-	static autoptr ref map<string,vector> StoredBeds = new map<string,vector>;
-	//static autoptr ref map<string,int> BedClassNames = new map<string,int>;
-
 	protected static bool m_Loaded = false;
-	
 	protected static string m_Folder = "$profile:BedRespawn2\\";
 	protected static string m_Config = m_Folder + "Config.json";
 	protected static string m_DataFolder = m_Folder + "PlayerData\\";
-
 	static ref BedConfig m_BedConfig = new BedConfig;
 
 	void BedFrameWork()
@@ -180,7 +192,7 @@ class BedFrameWork : Managed
 	}
 	void ~BedFrameWork() {}
 
-	static void LoadConfig()
+	void LoadConfig()
 	{
 		if ( FileExist(m_Config) == 0 )
 		{
@@ -192,7 +204,7 @@ class BedFrameWork : Managed
 		}
 	}
 
-	static void CreateDataFolder()
+	void CreateDataFolder()
 	{
 		if ( FileExist(m_DataFolder) == 0 )
 		{
@@ -210,38 +222,44 @@ class BedFrameWork : Managed
 		
 		if ( FileExist(m_DataFolder) )
 		{
-			StoredBeds.Insert( data.GetOwner(), data.GetPos() );
 			string player_id = m_DataFolder + name + ".json"; 
 			JsonFileLoader<BedData>.JsonSaveFile(player_id, data);
 		}
 		Print(data);
 	}
 
-	static vector AttemptBedSpawn( PlayerIdentity identity, vector DefaultPos, bool DestroyOldBed = true  )
+	static void OnEquipCharacter( PlayerBase m_player )
 	{
+		private vector m_SpawnPos = m_player.GetPosition();
+		private PlayerIdentity identity = m_player.GetIdentity();
+
 		if ( FileExist(m_DataFolder) )
 		{
 			string saved_bed = m_DataFolder + identity.GetId() + ".json"; 
 			if ( FileExist(saved_bed) )
 			{
-				BedData bed = new BedData("na","1 0 1");
+				BedData bed = new BedData("na","1 0 1", 0);
 				JsonFileLoader<BedData>.JsonLoadFile(saved_bed, bed);
-				if ( StoredBeds.Get( bed.GetOwner() ) )
-				{
-					StoredBeds.Insert( bed.GetOwner(), bed.GetPos() );
-				}
-				DefaultPos = bed.GetPos();
+				m_SpawnPos = bed.GetPos();
 
-				BreakOldSpawnBed(identity, DefaultPos);
+				if ( m_BedConfig.EnableBagCoolDown == 1 && CF_Date.Now(true).GetTimestamp() < bed.GetRespawnTime() )
+				return;
+				
+				if ( m_BedConfig.EnableBagCoolDown == 1 )
+				{
+					
+					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMins * 60 ) );
+					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
+				}
+
+				m_player.SetPosition( m_SpawnPos );
+				
+				if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
+				{
+					BreakOldSpawnBed(identity, m_SpawnPos);
+				}
 			}
 		}
-
-		return DefaultPos;
-	}
-
-	static void FixSpawningHeight( PlayerBase ply, vector Location  )
-	{
-		ply.SetPosition( Location );
 	}
 
 	static void RemoveRespawnData( string guid )
@@ -259,31 +277,27 @@ class BedFrameWork : Managed
 
 	static void BreakOldSpawnBed(PlayerIdentity identity, vector pos)
 	{
-		if ( m_BedConfig.DestroyBedAfterSpawn == 1 )
+		ref array<Object> Player_Bed = new array<Object>;
+		GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
+		for ( int i = 0; i < Player_Bed.Count(); i++ )
 		{
-			ref array<Object> Player_Bed = new array<Object>;
-			GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
-			for ( int i = 0; i < Player_Bed.Count(); i++ )
+			Object bed = Player_Bed.Get( i );
+			//Print(bed.IsItemBase());
+			//Print(bed.IsItemTent());
+			if ( bed.IsItemBase() )
 			{
-				Object bed = Player_Bed.Get( i );
-				//Print(bed.IsItemBase());
-				//Print(bed.IsItemTent());
-				if ( bed.IsItemBase() )
+				//Print("Object is ItemBase");
+				if ( bed.IsInherited(OP_SleepingBagColorbase) )
 				{
-					//Print("Object is ItemBase");
-					if ( bed.IsInherited(OP_SleepingBagColorbase) )
+					//Print("Object is inherited from OP_SleepingBagColorbase")
+					if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
 					{
-						//Print("Object is inherited from OP_SleepingBagColorbase")
-						if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
-						{
-							//Print("Found bed, deleting it!");
-							GetGame().ObjectDelete(bed);
-						}
+						//Print("Found bed, deleting it!");
+						GetGame().ObjectDelete(bed);
 					}
 				}
 			}
-
-			RemoveRespawnData( identity.GetId() );
 		}
+		RemoveRespawnData( identity.GetId() );
 	}
 }
