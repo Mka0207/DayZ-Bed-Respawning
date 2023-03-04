@@ -258,10 +258,11 @@ class BedFrameWork : Managed
 				if ( m_BedConfig.MaxRespawnsBeforeRemoval > 0 )
 				{
 					bed.SetUsesLeft( Math.Clamp( bed.GetUsesLeft() - 1, 0, m_BedConfig.MaxRespawnsBeforeRemoval ) )
-					if ( bed.GetUsesLeft() <= 1 )
+					if ( bed.GetUsesLeft() <= 0 )
 					{
 						BreakOldSpawnBed(identity, m_SpawnPos);
 					}
+					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
 				}
 
 				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
