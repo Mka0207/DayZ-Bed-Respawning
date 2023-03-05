@@ -13,7 +13,7 @@ class CfgMods
 {
 	class BedRespawning
 	{
-		dir="BedResawning";
+		dir="BedRespawning";
 		name="Bed-Respawning";
 		credits="Mka0207";
 		author="Mka0207";
