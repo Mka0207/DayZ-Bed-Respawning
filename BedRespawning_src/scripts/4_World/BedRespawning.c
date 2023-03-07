@@ -212,26 +212,33 @@ class BedFrameWork : Managed
 			{
 				BedData bed = new BedData("na","1 0 1", 0, 0);
 				JsonFileLoader<BedData>.JsonLoadFile(saved_bed, bed);
+
 				m_SpawnPos = bed.GetPos();
 				
 				if ( m_BedConfig.MaxRespawnsBeforeRemoval > 0 )
 				{
 					bed.SetUsesLeft( Math.Clamp( bed.GetUsesLeft() - 1, 0, m_BedConfig.MaxRespawnsBeforeRemoval ) )
+					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
+
 					if ( bed.GetUsesLeft() <= 0 )
 					{
 						BreakOldSpawnBed(identity, m_SpawnPos);
+						return;
 					}
-					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
 				}
 
-				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
+				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && bed.GetRespawnTime() > CF_Date.Now(true).GetTimestamp() )
 				{
-					
-					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes * 60 ) );
-					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
+					return;
 				}
 
 				m_player.SetPosition( m_SpawnPos );
+
+				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
+				{
+					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes * 60 ) );
+					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
+				}
 			}
 		}
 	}

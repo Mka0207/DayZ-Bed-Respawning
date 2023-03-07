@@ -199,7 +199,7 @@ class sleepingbag_tan extends SleepingBagBase {
 
 class SleepingBagBase_colorbase_Deployed extends ItemBase
 {
-	protected Object			SB_ClutterCutter;
+	protected Object SB_ClutterCutter;
 
 	string BagDeployClass()
 	{

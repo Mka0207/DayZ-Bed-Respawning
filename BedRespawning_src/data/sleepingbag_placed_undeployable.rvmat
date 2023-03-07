@@ -49,15 +49,8 @@ class Stage4
 };
 class Stage5
 {
-	texture="dz\gear\camping\data\tent_medium_pitched_smdi.paa";
+	texture="BedRespawning\data\sleepingbagnew_smdi.paa";
 	uvSource="tex";
-	class uvTransform
-	{
-		aside[]={1,0,0};
-		up[]={0,1,0};
-		dir[]={0,0,0};
-		pos[]={0,0,0};
-	};
 };
 class Stage6
 {
