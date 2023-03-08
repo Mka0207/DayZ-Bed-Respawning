@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020 FWKZT <master@fwkzt.com>
+ * Copyright (C) 2011-2023 FWKZT <master@fwkzt.com>
  * 
  * This file is part of Bed-Respawning.
  * 
@@ -19,22 +19,14 @@ modded class SleepingBagBase
 			if ( SleepingBagBase_Deployed1 )
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
-				vector pos = player_base.GetLocalProjectionPosition();
-				
 				PlayerIdentity pd = player_base.GetIdentity();
+				vector pos = player_base.GetLocalProjectionPosition();
 
 				SleepingBagBase_colorbase_Deployed target = SleepingBagBase_colorbase_Deployed.Cast( SleepingBagBase_Deployed1 );
-				
 				target.m_OwnerID = pd.GetId();
 				target.m_Uses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
 
-				if ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes > 0 )
-				{
-					player_base.RPCSingleParam( ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>( "Bed-Respawn Cooldown after Death = "+BedFrameWork.m_BedConfig.BedRespawnTimeMinutes+" Minutes." ), true, pd );
-				}
-
-				ref BedData bed = new BedData(target.m_OwnerID,pos,0,target.m_Uses);
-				BedFrameWork.InsertBed( bed );
+				BedFrameWork.InsertBed( player_base, target.m_OwnerID, pos, 0, target.m_Uses );
 			}
 		}
 	}
@@ -89,32 +81,27 @@ modded class ActionPackSleepingBag
 }
 
 //OP_BaseItems support
-modded class OP_SleepingBagColorbase
+modded class TentBase //modded class OP_SleepingBagColorbase
 {
 	string m_OwnerID;
 	int m_Uses;
 
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
+		Print(this.GetType());
+		Print(this.GetHierarchyParent());
 		super.OnPlacementComplete( player,position,orientation );
-
-		if ( GetGame().IsServer() )
+		//parent.GetHierarchyParent()
+		if ( GetGame().IsServer() && this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
+			PlayerIdentity pd = player_base.GetIdentity();
 			vector pos = player_base.GetLocalProjectionPosition();
 
-			PlayerIdentity pd = player_base.GetIdentity();
 			m_OwnerID = pd.GetId();
-
 			m_Uses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
 
-			if ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes > 0 )
-			{
-				player_base.RPCSingleParam( ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>( "Bed-Respawn Cooldown after Death = "+BedFrameWork.m_BedConfig.BedRespawnTimeMinutes+" Minutes." ), true, pd );
-			}
-
-			ref BedData bed = new BedData(m_OwnerID,pos,0,m_Uses);
-			BedFrameWork.InsertBed( bed );
+			BedFrameWork.InsertBed( player_base, m_OwnerID, pos, 0, m_Uses );
 		}
 	}
 
@@ -122,8 +109,11 @@ modded class OP_SleepingBagColorbase
 	{
 		super.OnStoreSave(ctx);
 
-		ctx.Write(m_OwnerID);
-		ctx.Write(m_Uses);
+		if ( this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+		{
+			ctx.Write(m_OwnerID);
+			ctx.Write(m_Uses);
+		}
 	}
 
 	override bool OnStoreLoad(ParamsReadContext ctx, int version)
@@ -131,18 +121,21 @@ modded class OP_SleepingBagColorbase
 		if (!super.OnStoreLoad(ctx, version))
         return false;
 
-		if ( !ctx.Read(m_OwnerID) )
-			return false;
+		if ( this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+		{
+			if ( !ctx.Read(m_OwnerID) )
+				return false;
 
-		if ( !ctx.Read(m_Uses) )
-			return false;
+			if ( !ctx.Read(m_Uses) )
+				return false;
+		}
 
 		return true;
 	}
 
 	override void Pack( bool update_navmesh, bool init = false )
 	{		
-		if ( GetGame().IsServer() )
+		if ( GetGame().IsServer()  && this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
 		{
 			if ( GetState() == PITCHED && m_OwnerID != "" )
 			{
@@ -160,7 +153,7 @@ modded class OP_SleepingBagColorbase
 
 		//if ( m_IsHologram ) return;
 
-		if ( GetGame().IsServer() )
+		if ( GetGame().IsServer() && this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
 		{
 			if ( GetState() == PITCHED && m_OwnerID != "" )
 			{
@@ -267,17 +260,24 @@ class BedFrameWork : Managed
 		}
 	}
 
-	static void InsertBed( BedData data )
+	static void InsertBed( PlayerBase player_base, string guid, vector bedpos, float cooldown, int uses )
 	{
+		ref BedData data = new BedData(guid,bedpos,cooldown,uses);
+
 		string msg = "[Bed-Respawn 2.0] Bed has been placed by ";
-		string name = data.GetOwner();
 		string ext_msg = " @ Location :";
 		
-		Print( msg + name + ext_msg + data.GetPos() );
+		Print( msg + guid + ext_msg + bedpos );
+
+		if ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes > 0 )
+		{
+			PlayerIdentity pd = player_base.GetIdentity();
+			player_base.RPCSingleParam( ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>( "Bed-Respawn Cooldown after Death = "+BedFrameWork.m_BedConfig.BedRespawnTimeMinutes+" Minutes." ), true, pd );
+		}
 		
 		if ( FileExist(m_DataFolder) )
 		{
-			string player_id = m_DataFolder + name + ".json"; 
+			string player_id = m_DataFolder + guid + ".json"; 
 			JsonFileLoader<BedData>.JsonSaveFile(player_id, data);
 		}
 		Print(data);
@@ -351,7 +351,7 @@ class BedFrameWork : Managed
 			if ( bed.IsItemBase() )
 			{
 				//Print("Object is ItemBase");
-				if ( bed.IsInherited(SleepingBagBase_colorbase_Deployed) )
+				if ( bed.IsInherited(SleepingBagBase_colorbase_Deployed) && bed.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
 				{
 					//Print("Object is inherited from OP_SleepingBagColorbase")
 					if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
