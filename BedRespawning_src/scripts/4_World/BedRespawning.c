@@ -88,6 +88,89 @@ modded class ActionPackSleepingBag
 	}
 }
 
+//OP_BaseItems support
+modded class OP_SleepingBagColorbase
+{
+	string m_OwnerID;
+	int m_Uses;
+
+	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	{
+		super.OnPlacementComplete( player,position,orientation );
+
+		if ( GetGame().IsServer() )
+		{
+			PlayerBase player_base = PlayerBase.Cast( player );
+			vector pos = player_base.GetLocalProjectionPosition();
+
+			PlayerIdentity pd = player_base.GetIdentity();
+			m_OwnerID = pd.GetId();
+
+			m_Uses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
+
+			if ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes > 0 )
+			{
+				player_base.RPCSingleParam( ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>( "Bed-Respawn Cooldown after Death = "+BedFrameWork.m_BedConfig.BedRespawnTimeMinutes+" Minutes." ), true, pd );
+			}
+
+			ref BedData bed = new BedData(m_OwnerID,pos,0,m_Uses);
+			BedFrameWork.InsertBed( bed );
+		}
+	}
+
+	override void OnStoreSave(ParamsWriteContext ctx)
+	{
+		super.OnStoreSave(ctx);
+
+		ctx.Write(m_OwnerID);
+		ctx.Write(m_Uses);
+	}
+
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
+	{
+		if (!super.OnStoreLoad(ctx, version))
+        return false;
+
+		if ( !ctx.Read(m_OwnerID) )
+			return false;
+
+		if ( !ctx.Read(m_Uses) )
+			return false;
+
+		return true;
+	}
+
+	override void Pack( bool update_navmesh, bool init = false )
+	{		
+		if ( GetGame().IsServer() )
+		{
+			if ( GetState() == PITCHED && m_OwnerID != "" )
+			{
+				Print("[Bed-Respawn 2.0] Ran Pack for Sleeing Bag!");
+				BedFrameWork.RemoveRespawnData( m_OwnerID );
+			}
+		}
+
+		super.Pack(update_navmesh,init);
+	}
+
+	override void EEDelete(EntityAI parent)
+	{
+		super.EEDelete(parent);
+
+		//if ( m_IsHologram ) return;
+
+		if ( GetGame().IsServer() )
+		{
+			if ( GetState() == PITCHED && m_OwnerID != "" )
+			{
+				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
+				BedFrameWork.RemoveRespawnData( m_OwnerID );
+			}
+		}
+	}
+}
+
 class BedData : BedFrameWork
 {
 	string m_BedOwner = "test";
