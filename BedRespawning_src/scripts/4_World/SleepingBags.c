@@ -7,9 +7,9 @@ modded class ModItemRegisterCallbacks
     }
 }
 
-class ActionPackSleepingBag: ActionContinuousBase
+class ActionPackRespawnBag: ActionContinuousBase
 {
-	void ActionPackSleepingBag()
+	void ActionPackRespawnBag()
 	{
 		m_CallbackClass = ActionBuildOvenCB;
 		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
@@ -43,7 +43,7 @@ class ActionPackSleepingBag: ActionContinuousBase
 	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
 	{	
 		Object targetObject = target.GetObject();
-		SleepingBagBase_colorbase_Deployed m_sleepingbag = SleepingBagBase_colorbase_Deployed.Cast( targetObject );
+		SleepingBagBase_Deployed m_sleepingbag = SleepingBagBase_Deployed.Cast( targetObject );
 
 		if ( m_sleepingbag )
 		{
@@ -58,7 +58,7 @@ class ActionPackSleepingBag: ActionContinuousBase
 	override void OnFinishProgressServer( ActionData action_data )
 	{	
 		Object targetObject = action_data.m_Target.GetObject();
-		SleepingBagBase_colorbase_Deployed target = SleepingBagBase_colorbase_Deployed.Cast( targetObject );
+		SleepingBagBase_Deployed target = SleepingBagBase_Deployed.Cast( targetObject );
 		vector position = target.GetPosition();
 
 		target.SpawnTheTent(position);
@@ -71,14 +71,14 @@ modded class ActionConstructor
     override void RegisterActions(TTypenameArray actions)
     {
         super.RegisterActions(actions);
-		actions.Insert(ActionPackSleepingBag);
+		actions.Insert(ActionPackRespawnBag);
     }
 };
 
 class SleepingBagBase extends ItemBase
 {
 	ref protected EffectSound 	m_DeployLoopSound;
-	protected Object			SleepingBagBase_Deployed1;
+	protected Object			SleepingBag_Deployed;
 	protected Object			SB_ClutterCutter;
 
 
@@ -88,7 +88,7 @@ class SleepingBagBase extends ItemBase
 	}
 	string BagDeployClass()
 	{
-		return "sleepingbag_tan";
+		return "br_sleepingbag";
 	}
 	
 	void SleepingBagBase()
@@ -136,9 +136,9 @@ class SleepingBagBase extends ItemBase
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
 				
-			SleepingBagBase_Deployed1 = GetGame().CreateObjectEx(this.BagDeployClass(), GetPosition(), ECE_PLACE_ON_SURFACE );				
-			SleepingBagBase_Deployed1.SetPosition( position);
-			SleepingBagBase_Deployed1.SetOrientation( orientation );
+			SleepingBag_Deployed = GetGame().CreateObjectEx(this.BagDeployClass(), GetPosition(), ECE_PLACE_ON_SURFACE );				
+			SleepingBag_Deployed.SetPosition( position);
+			SleepingBag_Deployed.SetOrientation( orientation );
 
 			SB_ClutterCutter = GetGame().CreateObject( "ClutterCutterFireplace", pb.GetLocalProjectionPosition(), false );
 			SB_ClutterCutter.SetPosition( position);
@@ -190,20 +190,20 @@ class SleepingBagBase extends ItemBase
 	}
 };
 
-class sleepingbag_tan extends SleepingBagBase {
+class br_sleepingbag extends SleepingBagBase {
 	override string BagDeployClass()
 	{
-		return "sleepingbag_tan_Deployed";
+		return "br_sleepingbag_deployed";
 	}
 };
 
-class SleepingBagBase_colorbase_Deployed extends ItemBase
+class SleepingBagBase_Deployed extends ItemBase
 {
 	protected Object SB_ClutterCutter;
 
 	string BagDeployClass()
 	{
-		return "sleepingbag_tan";
+		return "br_sleepingbag";
 	}
 
 	void SpawnTheTent(vector position)
@@ -225,7 +225,7 @@ class SleepingBagBase_colorbase_Deployed extends ItemBase
 	{
 		super.SetActions();
 		
-		AddAction(ActionPackSleepingBag);
+		AddAction(ActionPackRespawnBag);
 	}
 
 };
@@ -236,9 +236,9 @@ modded class Hologram
 	{
 		ItemBase item_in_hands = ItemBase.Cast( m_Player.GetHumanInventory().GetEntityInHands() );
 
-		if ( item_in_hands.IsInherited( sleepingbag_tan ))
+		if ( item_in_hands.IsInherited( br_sleepingbag ))
 		{
-			return "sleepingbag_tan_Deployed";
+			return "br_sleepingbag_deployed";
 		}
 
 		return super.ProjectionBasedOnParent();

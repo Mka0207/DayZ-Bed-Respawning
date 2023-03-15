@@ -4,8 +4,8 @@ class CfgPatches
 	{
 		units[]=
 		{
-			"sleepingbag_tan",
-			"sleepingbag_tan_Deployed"
+			"br_sleepingbag",
+			"br_sleepingbag_deployed"
 		};
 		weapons[]={};
 		requiredVersion=0.1;
@@ -55,8 +55,8 @@ class CfgVehicles
 	class SleepingBag: Inventory_Base
 	{
 		scope=0;
-		displayName="Sleepingbag packed";
-		descriptionShort="A tightly packed sleepingbag.";
+		displayName="Packed Sleeping Bag";
+		descriptionShort="A packed red sleeping bag.";
 		model="\BedRespawning\sleeping_bagnew.p3d";
 		weight=2000;
 		itemBehaviour=2;
@@ -71,13 +71,13 @@ class CfgVehicles
 			"BedRespawning\data\sleepingbagnew_co.paa"
 		};
 	};
-	class SleepingBagBase_colorbase_Deployed: Inventory_Base
+	class SleepingBagBase_Deployed: Inventory_Base
 	{
 		scope=0;
-		displayName="Sleepingbag";
-		descriptionShort="Sleepingbag";
+		displayName="Sleeping Bag";
+		descriptionShort="Made out of comfy material that serves as a spawn point.";
 		model="\BedRespawning\sleepingbag_placed.p3d";
-		weight=2000;
+		weight=1800;
 		physLayer="item_large";
 		itemsCargoSize[]={5,5};
 		itemSize[]={8,4};
@@ -96,16 +96,16 @@ class CfgVehicles
 		hologramMaterial="sleepingbag_placed";
 		hologramMaterialPath="BedRespawning\data";
 	};
-	class sleepingbag_tan: SleepingBag
+	class br_sleepingbag: SleepingBag
 	{
 		scope=2;
-		displayName="Sleepingbag Tan";
+		displayName="Sleeping Bag";
 		hiddenSelectionsTextures[]=
 		{
 			"BedRespawning\data\sleepingbagnew_co.paa"
 		};
 	};
-	class sleepingbag_tan_Deployed: SleepingBagBase_colorbase_Deployed
+	class br_sleepingbag_deployed: SleepingBagBase_Deployed
 	{
 		scope=2;
 		hiddenSelectionsTextures[]=

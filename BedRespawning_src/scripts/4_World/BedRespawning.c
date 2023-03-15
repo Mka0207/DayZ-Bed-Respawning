@@ -16,13 +16,13 @@ modded class SleepingBagBase
 
 		if ( GetGame().IsServer() )
 		{
-			if ( SleepingBagBase_Deployed1 )
+			if ( SleepingBag_Deployed )
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
 				PlayerIdentity pd = player_base.GetIdentity();
 				vector pos = player_base.GetLocalProjectionPosition();
 
-				SleepingBagBase_colorbase_Deployed target = SleepingBagBase_colorbase_Deployed.Cast( SleepingBagBase_Deployed1 );
+				SleepingBagBase_Deployed target = SleepingBagBase_Deployed.Cast( SleepingBag_Deployed );
 				target.m_OwnerID = pd.GetId();
 				target.m_Uses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
 
@@ -32,7 +32,7 @@ modded class SleepingBagBase
 	}
 }
 
-modded class SleepingBagBase_colorbase_Deployed
+modded class SleepingBagBase_Deployed
 {
 	static string m_OwnerID;
 	static int m_Uses;
@@ -60,12 +60,12 @@ modded class SleepingBagBase_colorbase_Deployed
 	}
 }
 
-modded class ActionPackSleepingBag
+modded class ActionPackRespawnBag
 {
 	override void OnFinishProgressServer(ActionData action_data)
 	{
 		Object targetObject = action_data.m_Target.GetObject();
-		SleepingBagBase_colorbase_Deployed target = SleepingBagBase_colorbase_Deployed.Cast( targetObject );
+		SleepingBagBase_Deployed target = SleepingBagBase_Deployed.Cast( targetObject );
 
 		if ( GetGame().IsServer() )
 		{
@@ -88,11 +88,10 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
-		Print(this.GetType());
-		Print(this.GetHierarchyParent());
 		super.OnPlacementComplete( player,position,orientation );
-		//parent.GetHierarchyParent()
-		if ( GetGame().IsServer() && this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
+
+		if ( GetGame().IsServer() && ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" ) )
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
 			PlayerIdentity pd = player_base.GetIdentity();
@@ -109,7 +108,8 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 	{
 		super.OnStoreSave(ctx);
 
-		if ( this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
+		if ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" )
 		{
 			ctx.Write(m_OwnerID);
 			ctx.Write(m_Uses);
@@ -121,7 +121,9 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 		if (!super.OnStoreLoad(ctx, version))
         return false;
 
-		if ( this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return false;
+
+		if ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" )
 		{
 			if ( !ctx.Read(m_OwnerID) )
 				return false;
@@ -135,11 +137,11 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 
 	override void Pack( bool update_navmesh, bool init = false )
 	{		
-		if ( GetGame().IsServer()  && this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+		if ( GetGame().IsServer() && BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 1 && ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" ) )
 		{
 			if ( GetState() == PITCHED && m_OwnerID != "" )
 			{
-				Print("[Bed-Respawn 2.0] Ran Pack for Sleeing Bag!");
+				Print("[Bed-Respawn 2.0] Ran Pack for Sleeping Bag!");
 				BedFrameWork.RemoveRespawnData( m_OwnerID );
 			}
 		}
@@ -151,10 +153,9 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 	{
 		super.EEDelete(parent);
 
-		//if ( m_IsHologram ) return;
-
-		if ( GetGame().IsServer() && this.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+		if ( GetGame().IsServer() && ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" ) )
 		{
+			if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
 			if ( GetState() == PITCHED && m_OwnerID != "" )
 			{
 				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
@@ -208,6 +209,10 @@ class BedConfig
 {
 	int MaxRespawnsBeforeRemoval = 0;
 	int BedRespawnTimeMinutes = 45;
+	int EnableOpBaseItemSupport = 1;
+	int HealthPercentage = 100;
+	int EnergyPercentage = 100;
+	int WaterPercentage = 100;
 }
 
 class BedFrameWork : Managed
@@ -280,7 +285,14 @@ class BedFrameWork : Managed
 			string player_id = m_DataFolder + guid + ".json"; 
 			JsonFileLoader<BedData>.JsonSaveFile(player_id, data);
 		}
-		Print(data);
+		//Print(data);
+	}
+
+	static void ApplyModifiers( PlayerBase pl )
+	{
+		pl.GetStatWater().Set( pl.GetStatWater().GetMax() * Math.Max( 0.1, m_BedConfig.WaterPercentage*0.01 ) );
+		pl.GetStatEnergy().Set( pl.GetStatEnergy().GetMax() * Math.Max( 0.1, m_BedConfig.EnergyPercentage*0.01 ) );
+		pl.SetHealth("", "Health", pl.GetMaxHealth("","Health") * Math.Max( 0.1, m_BedConfig.HealthPercentage*0.01 ) );
 	}
 
 	static void OnEquipCharacter( PlayerBase m_player )
@@ -297,6 +309,11 @@ class BedFrameWork : Managed
 				JsonFileLoader<BedData>.JsonLoadFile(saved_bed, bed);
 
 				m_SpawnPos = bed.GetPos();
+
+				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && bed.GetRespawnTime() > CF_Date.Now(true).GetTimestamp() )
+				{
+					return;
+				}
 				
 				if ( m_BedConfig.MaxRespawnsBeforeRemoval > 0 )
 				{
@@ -306,22 +323,20 @@ class BedFrameWork : Managed
 					if ( bed.GetUsesLeft() <= 0 )
 					{
 						BreakOldSpawnBed(identity, m_SpawnPos);
+						ApplyModifiers(m_player);
+						m_player.SetPosition( m_SpawnPos );
 						return;
 					}
 				}
 
-				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && bed.GetRespawnTime() > CF_Date.Now(true).GetTimestamp() )
-				{
-					return;
-				}
-
-				m_player.SetPosition( m_SpawnPos );
-
-				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
+				if ( m_BedConfig.MaxRespawnsBeforeRemoval > 1 && m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
 				{
 					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes * 60 ) );
 					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
 				}
+
+				ApplyModifiers(m_player);
+				m_player.SetPosition( m_SpawnPos );
 			}
 		}
 	}
@@ -351,7 +366,7 @@ class BedFrameWork : Managed
 			if ( bed.IsItemBase() )
 			{
 				//Print("Object is ItemBase");
-				if ( bed.IsInherited(SleepingBagBase_colorbase_Deployed) && bed.GetType().IndexOfFrom( 3, "OP_SleepingBag" ) )
+				if ( bed.IsInherited(SleepingBagBase_Deployed) || ( bed.GetType() == "OP_SleepingBagCamo" || bed.GetType() == "OP_SleepingBagBlue" || bed.GetType() == "OP_SleepingBagGrey" ) )
 				{
 					//Print("Object is inherited from OP_SleepingBagColorbase")
 					if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
