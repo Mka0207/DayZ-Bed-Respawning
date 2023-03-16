@@ -451,7 +451,7 @@ class BedFrameWork : Managed
 					}
 				}
 
-				if ( m_BedConfig.MaxRespawnsBeforeRemoval > 1 && m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
+				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
 				{
 					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes * 60 ) );
 					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
@@ -459,12 +459,6 @@ class BedFrameWork : Managed
 
 				ApplyModifiers(m_player);
 				m_player.SetPosition( m_SpawnPos );
-
-				if ( m_BedConfig.MaxRespawnsBeforeRemoval == 0 && m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
-				{
-					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes * 60 ) );
-					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
-				}
 			}
 		}
 	}
