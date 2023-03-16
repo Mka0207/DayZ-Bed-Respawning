@@ -8,10 +8,10 @@ modded class MissionServer
 		m_BedFrameWork = new BedFrameWork;
 	}
 
-	override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
+	override void EquipCharacter(MenuDefaultCharacterData char_data)
 	{
-		super.StartingEquipSetup(player,clothesChosen);
+		super.EquipCharacter(char_data);
 		if ( m_BedFrameWork.m_BedConfig.DisableAutoSpawnCall == 1 ) return;
-		BedFrameWork.OnEquipCharacter( player );
+		m_BedFrameWork.OnEquipCharacter( m_player );
 	}
 }

@@ -17,9 +17,9 @@ modded class ActionPlaceObject
 		if ( m_CommandUID == DayZPlayerConstants.CMD_ACTIONFB_DEPLOY_2HD )
 		{
 			ItemBase bed = action_data.m_MainItem;
-			Print("ActionPlaceObject " + bed);
 			if ( BedFrameWork.m_BedConfig.EnableBBP && bed.GetType() == "BBP_BedKit" )
 			{
+				//Print("ActionPlaceObject " + bed);
 				Print("[ActionPlaceObject] OnFinishProgressServer - BBP FIX");
 
 				PlayerIdentity pd = action_data.m_Player.GetIdentity();
@@ -66,7 +66,7 @@ modded class ItemBase
 
 		if ( this.IsHologram() ) return;
 
-		Print(this.GetType());
+		//Print(this.GetType());
 
 		if ( GetGame().IsServer() )
 		{
@@ -168,6 +168,8 @@ modded class SleepingBagBase_Deployed
 
 		if ( GetGame().IsServer() )
 		{
+			if ( this.IsHologram() ) return;
+
 			if ( m_OwnerID != "" )
 			{
 				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
