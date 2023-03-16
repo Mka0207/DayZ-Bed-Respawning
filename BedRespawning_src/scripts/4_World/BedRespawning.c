@@ -18,7 +18,7 @@ modded class ActionPlaceObject
 		{
 			ItemBase bed = action_data.m_MainItem;
 			Print("ActionPlaceObject " + bed);
-			if ( bed.GetType() == "BBP_BedKit" )
+			if ( BedFrameWork.m_BedConfig.EnableBBP && bed.GetType() == "BBP_BedKit" )
 			{
 				Print("[ActionPlaceObject] OnFinishProgressServer - BBP FIX");
 
@@ -70,7 +70,7 @@ modded class ItemBase
 
 		if ( GetGame().IsServer() )
 		{
-			if ( this.GetType() == "BBP_Bed" || BedFrameWork.IsDeployedMungItem(this.GetType()) )
+			if ( BedFrameWork.m_BedConfig.EnableBBP && this.GetType() == "BBP_Bed" || BedFrameWork.m_BedConfig.EnableMung && BedFrameWork.IsDeployedMungItem(this.GetType()) )
 			{
 				if ( m_OwnerID != "" )
 				{
@@ -85,7 +85,7 @@ modded class ItemBase
 	{
 		super.OnStoreSave(ctx);
 
-		if ( this.GetType() == "BBP_Bed" || BedFrameWork.IsDeployedMungItem(this.GetType()) )
+		if ( BedFrameWork.m_BedConfig.EnableBBP && this.GetType() == "BBP_Bed" || BedFrameWork.m_BedConfig.EnableMung && BedFrameWork.IsDeployedMungItem(this.GetType()) )
 		{
 			ctx.Write(m_OwnerID);
 			ctx.Write(m_Uses);
@@ -97,7 +97,7 @@ modded class ItemBase
 		if (!super.OnStoreLoad(ctx, version))
         return false;
 
-		if ( this.GetType() == "BBP_Bed" || BedFrameWork.IsDeployedMungItem(this.GetType()) )
+		if ( BedFrameWork.m_BedConfig.EnableBBP && this.GetType() == "BBP_Bed" || BedFrameWork.m_BedConfig.EnableMung && BedFrameWork.IsDeployedMungItem(this.GetType()) )
 		{
 			if ( !ctx.Read(m_OwnerID) )
 				return false;
@@ -515,8 +515,8 @@ class BedFrameWork : Managed
 		return c == "sleepingbag_red_mung" || c == "sleepingbag_blue_mung" || c == "sleepingbag_green_mung" || c == "sleepingbag_yellow_mung";
 	}
 
-	static bool IsMuchStuffItem(string c)
+	/*static bool IsMuchStuffItem(string c)
 	{
 		return c == "Msp_SleepingBag_Green" || c == "Msp_SleepingBag_Blue" || c == "Msp_SleepingBag_LimeGreen" || c == "Msp_SleepingBag_Orange" || c == "Msp_SleepingBag_Purple" || c == "Msp_SleepingBag_Red";
-	}
+	}*/
 }
