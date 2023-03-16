@@ -7,6 +7,109 @@
  * permission of Scott Grissinger <https://steamcommunity.com/id/mka0207/> <g4.tyler@live.com>.
 */
 
+//Base Building Plus support
+modded class ActionPlaceObject
+{		
+	override void OnFinishProgressServer( ActionData action_data )
+	{	
+		super.OnFinishProgressServer(action_data);
+
+		if ( m_CommandUID == DayZPlayerConstants.CMD_ACTIONFB_DEPLOY_2HD )
+		{
+			ItemBase bed = action_data.m_MainItem;
+			Print("ActionPlaceObject " + bed);
+			if ( bed.GetType() == "BBP_BedKit" )
+			{
+				Print("[ActionPlaceObject] OnFinishProgressServer - BBP FIX");
+
+				PlayerIdentity pd = action_data.m_Player.GetIdentity();
+				vector pos = action_data.m_Player.GetLocalProjectionPosition();
+
+				bed.m_OwnerID = pd.GetId();
+				bed.m_Uses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
+
+				BedFrameWork.InsertBed( action_data.m_Player, bed.m_OwnerID, pos, 0, bed.m_Uses );
+			}
+		}
+	}
+}
+
+//Mung and BPP support continued.
+modded class ItemBase
+{
+	static string m_OwnerID;
+	static int m_Uses;
+
+	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
+	{
+		super.OnPlacementComplete( player,position,orientation );
+
+		if ( GetGame().IsServer() )
+		{
+			if ( BedFrameWork.IsPackedMungItem(this.GetType()) )
+			{
+				PlayerBase player_base = PlayerBase.Cast( player );
+				PlayerIdentity pd = player_base.GetIdentity();
+				vector pos = player_base.GetLocalProjectionPosition();
+
+				m_OwnerID = pd.GetId();
+				m_Uses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
+
+				BedFrameWork.InsertBed( player_base, m_OwnerID, pos, 0, m_Uses );
+			}
+		}
+	}
+
+	override void EEDelete(EntityAI parent)
+	{
+		super.EEDelete(parent);
+
+		if ( this.IsHologram() ) return;
+
+		Print(this.GetType());
+
+		if ( GetGame().IsServer() )
+		{
+			if ( this.GetType() == "BBP_Bed" || BedFrameWork.IsDeployedMungItem(this.GetType()) )
+			{
+				if ( m_OwnerID != "" )
+				{
+					Print("[Bed-Respawn 2.0] Ran EEDelete for BBP Bed!");
+					BedFrameWork.RemoveRespawnData( m_OwnerID );
+				}
+			}
+		}
+	}
+
+	override void OnStoreSave(ParamsWriteContext ctx)
+	{
+		super.OnStoreSave(ctx);
+
+		if ( this.GetType() == "BBP_Bed" || BedFrameWork.IsDeployedMungItem(this.GetType()) )
+		{
+			ctx.Write(m_OwnerID);
+			ctx.Write(m_Uses);
+		}
+	}
+
+	override bool OnStoreLoad(ParamsReadContext ctx, int version)
+	{
+		if (!super.OnStoreLoad(ctx, version))
+        return false;
+
+		if ( this.GetType() == "BBP_Bed" || BedFrameWork.IsDeployedMungItem(this.GetType()) )
+		{
+			if ( !ctx.Read(m_OwnerID) )
+				return false;
+
+			if ( !ctx.Read(m_Uses) )
+				return false;
+		}
+
+		return true;
+	}
+}
+
 //Support for our own beds.
 modded class SleepingBagBase
 {
@@ -58,6 +161,20 @@ modded class SleepingBagBase_Deployed
 
 		return true;
 	}
+	
+	override void EEDelete(EntityAI parent)
+	{
+		super.EEDelete(parent);
+
+		if ( GetGame().IsServer() )
+		{
+			if ( m_OwnerID != "" )
+			{
+				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
+				BedFrameWork.RemoveRespawnData( m_OwnerID );
+			}
+		}
+	}
 }
 
 modded class ActionPackRespawnBag
@@ -71,7 +188,7 @@ modded class ActionPackRespawnBag
 		{
 			if (target && target.m_OwnerID != "" )
 			{
-				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
+				Print("[Bed-Respawn 2.0] Ran ActionPackRespawnBag for Sleeping Bag!");
 				BedFrameWork.RemoveRespawnData( target.m_OwnerID );
 			}
 		}
@@ -81,7 +198,7 @@ modded class ActionPackRespawnBag
 }
 
 //OP_BaseItems support
-modded class TentBase //modded class OP_SleepingBagColorbase
+modded class TentBase
 {
 	string m_OwnerID;
 	int m_Uses;
@@ -91,7 +208,7 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 		super.OnPlacementComplete( player,position,orientation );
 		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
 
-		if ( GetGame().IsServer() && ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" ) )
+		if ( GetGame().IsServer() && BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
 			PlayerBase player_base = PlayerBase.Cast( player );
 			PlayerIdentity pd = player_base.GetIdentity();
@@ -109,7 +226,7 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 		super.OnStoreSave(ctx);
 
 		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
-		if ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" )
+		if ( BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
 			ctx.Write(m_OwnerID);
 			ctx.Write(m_Uses);
@@ -123,7 +240,7 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 
 		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return false;
 
-		if ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" )
+		if ( BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
 			if ( !ctx.Read(m_OwnerID) )
 				return false;
@@ -137,7 +254,7 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 
 	override void Pack( bool update_navmesh, bool init = false )
 	{		
-		if ( GetGame().IsServer() && BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 1 && ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" ) )
+		if ( GetGame().IsServer() && BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 1 && BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
 			if ( GetState() == PITCHED && m_OwnerID != "" )
 			{
@@ -153,7 +270,7 @@ modded class TentBase //modded class OP_SleepingBagColorbase
 	{
 		super.EEDelete(parent);
 
-		if ( GetGame().IsServer() && ( this.GetType() == "OP_SleepingBagCamo" || this.GetType() == "OP_SleepingBagBlue" || this.GetType() == "OP_SleepingBagGrey" ) )
+		if ( GetGame().IsServer() && BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
 			if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
 			if ( GetState() == PITCHED && m_OwnerID != "" )
@@ -213,6 +330,9 @@ class BedConfig
 	int HealthPercentage = 100;
 	int EnergyPercentage = 100;
 	int WaterPercentage = 100;
+	int DisableAutoSpawnCall = 0;
+	int EnableBBP = 1;
+	int EnableMung = 1;
 }
 
 class BedFrameWork : Managed
@@ -366,7 +486,7 @@ class BedFrameWork : Managed
 			if ( bed.IsItemBase() )
 			{
 				//Print("Object is ItemBase");
-				if ( bed.IsInherited(SleepingBagBase_Deployed) || ( bed.GetType() == "OP_SleepingBagCamo" || bed.GetType() == "OP_SleepingBagBlue" || bed.GetType() == "OP_SleepingBagGrey" ) )
+				if ( bed.IsInherited(SleepingBagBase_Deployed) || BedFrameWork.IsDeployedMungItem(bed.GetType()) || BedFrameWork.IsOPBaseItem(bed.GetType()) || bed.GetType() == "BBP_Bed" )
 				{
 					//Print("Object is inherited from OP_SleepingBagColorbase")
 					if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
@@ -378,5 +498,25 @@ class BedFrameWork : Managed
 			}
 		}
 		RemoveRespawnData( identity.GetId() );
+	}
+
+	static bool IsOPBaseItem(string c)
+	{
+		return c == "OP_SleepingBagCamo" || c == "OP_SleepingBagBlue" || c == "OP_SleepingBagGrey"
+	}
+
+	static bool IsDeployedMungItem(string c)
+	{
+		return c == "sleepingbag_red_mung_Deployed" || c == "sleepingbag_blue_mung_Deployed" || c == "sleepingbag_green_mung_Deployed" || c == "sleepingbag_yellow_mung_Deployed";
+	}
+
+	static bool IsPackedMungItem(string c)
+	{
+		return c == "sleepingbag_red_mung" || c == "sleepingbag_blue_mung" || c == "sleepingbag_green_mung" || c == "sleepingbag_yellow_mung";
+	}
+
+	static bool IsMuchStuffItem(string c)
+	{
+		return c == "Msp_SleepingBag_Green" || c == "Msp_SleepingBag_Blue" || c == "Msp_SleepingBag_LimeGreen" || c == "Msp_SleepingBag_Orange" || c == "Msp_SleepingBag_Purple" || c == "Msp_SleepingBag_Red";
 	}
 }
