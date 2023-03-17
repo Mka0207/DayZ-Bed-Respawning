@@ -25,10 +25,10 @@ modded class ActionPlaceObject
 				PlayerIdentity pd = action_data.m_Player.GetIdentity();
 				vector pos = action_data.m_Player.GetLocalProjectionPosition();
 
-				bed.m_OwnerBRGUID = pd.GetId();
-				bed.m_BRUses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
+				bed.SetBedOwner(pd.GetId());
+				bed.SetBedUses(BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval);
 
-				BedFrameWork.InsertBed( action_data.m_Player, bed.m_OwnerBRGUID, pos, 0, bed.m_BRUses );
+				BedFrameWork.InsertBed( action_data.m_Player, bed.GetBedOwner(), pos, 0, bed.GetBedUses() );
 			}
 		}
 	}
@@ -37,8 +37,26 @@ modded class ActionPlaceObject
 //Mung and BPP support continued.
 modded class ItemBase
 {
-	static string m_OwnerBRGUID;
-	static int m_BRUses;
+	private string m_OwnerBRGUID;
+	private int m_BRUses;
+
+	string GetBedOwner()
+	{
+		return m_OwnerBRGUID;
+	}
+	void SetBedOwner(string guid)
+	{
+		m_OwnerBRGUID = guid;
+	}
+
+	int GetBedUses()
+	{
+		return m_BRUses;
+	}
+	void SetBedUses(int uses)
+	{
+		m_BRUses = uses;
+	}
 
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
@@ -126,10 +144,10 @@ modded class SleepingBagBase
 				vector pos = player_base.GetLocalProjectionPosition();
 
 				SleepingBagBase_Deployed target = SleepingBagBase_Deployed.Cast( SleepingBag_Deployed );
-				target.m_OwnerBRGUID = pd.GetId();
-				target.m_BRUses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
+				target.SetBedOwner(pd.GetId());
+				target.SetBedUses(BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval);
 
-				BedFrameWork.InsertBed( player_base, target.m_OwnerBRGUID, pos, 0, target.m_BRUses );
+				BedFrameWork.InsertBed( player_base, target.GetBedOwner(), pos, 0, target.GetBedUses() );
 			}
 		}
 	}
@@ -137,15 +155,12 @@ modded class SleepingBagBase
 
 modded class SleepingBagBase_Deployed
 {
-	static string m_OwnerBRGUID;
-	static int m_BRUses;
-
 	override void OnStoreSave(ParamsWriteContext ctx)
 	{
 		super.OnStoreSave(ctx);
 
-		ctx.Write(m_OwnerBRGUID);
-		ctx.Write(m_BRUses);
+		ctx.Write(GetBedOwner());
+		ctx.Write(GetBedUses());
 	}
 
 	override bool OnStoreLoad(ParamsReadContext ctx, int version)
@@ -153,10 +168,10 @@ modded class SleepingBagBase_Deployed
 		if (!super.OnStoreLoad(ctx, version))
         return false;
 
-		if ( !ctx.Read(m_OwnerBRGUID) )
+		if ( !ctx.Read(GetBedOwner()) )
 			return false;
 
-		if ( !ctx.Read(m_BRUses) )
+		if ( !ctx.Read(GetBedUses()) )
 			return false;
 
 		return true;
@@ -170,10 +185,10 @@ modded class SleepingBagBase_Deployed
 		{
 			if ( this.IsHologram() ) return;
 
-			if ( m_OwnerBRGUID != "" )
+			if ( GetBedOwner() != "" )
 			{
 				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
-				BedFrameWork.RemoveRespawnData( m_OwnerBRGUID );
+				BedFrameWork.RemoveRespawnData( GetBedOwner() );
 			}
 		}
 	}
@@ -188,10 +203,10 @@ modded class ActionPackRespawnBag
 
 		if ( GetGame().IsServer() )
 		{
-			if (target && target.m_OwnerBRGUID != "" )
+			if (target && target.GetBedOwner() != "" )
 			{
 				Print("[Bed-Respawn 2.0] Ran ActionPackRespawnBag for Sleeping Bag!");
-				BedFrameWork.RemoveRespawnData( target.m_OwnerBRGUID );
+				BedFrameWork.RemoveRespawnData( target.GetBedOwner() );
 			}
 		}
 		
@@ -202,9 +217,6 @@ modded class ActionPackRespawnBag
 //OP_BaseItems support
 modded class TentBase
 {
-	string m_OwnerBRGUID;
-	int m_BRUses;
-
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
 	{
 		super.OnPlacementComplete( player,position,orientation );
@@ -216,10 +228,10 @@ modded class TentBase
 			PlayerIdentity pd = player_base.GetIdentity();
 			vector pos = player_base.GetLocalProjectionPosition();
 
-			m_OwnerBRGUID = pd.GetId();
-			m_BRUses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
+			this.SetBedOwner(pd.GetId());
+			this.SetBedUses(BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval);
 
-			BedFrameWork.InsertBed( player_base, m_OwnerBRGUID, pos, 0, m_BRUses );
+			BedFrameWork.InsertBed( player_base, this.GetBedOwner(), pos, 0, this.GetBedUses() );
 		}
 	}
 
@@ -230,8 +242,8 @@ modded class TentBase
 		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
 		if ( BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
-			ctx.Write(m_OwnerBRGUID);
-			ctx.Write(m_BRUses);
+			ctx.Write(this.GetBedOwner());
+			ctx.Write(this.GetBedUses());
 		}
 	}
 
@@ -244,10 +256,10 @@ modded class TentBase
 
 		if ( BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
-			if ( !ctx.Read(m_OwnerBRGUID) )
+			if ( !ctx.Read(this.GetBedOwner()) )
 				return false;
 
-			if ( !ctx.Read(m_BRUses) )
+			if ( !ctx.Read(this.GetBedUses()) )
 				return false;
 		}
 
@@ -258,10 +270,10 @@ modded class TentBase
 	{		
 		if ( GetGame().IsServer() && BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 1 && BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
-			if ( GetState() == PITCHED && m_OwnerBRGUID != "" )
+			if ( GetState() == PITCHED && this.GetBedOwner() != "" )
 			{
 				Print("[Bed-Respawn 2.0] Ran Pack for Sleeping Bag!");
-				BedFrameWork.RemoveRespawnData( m_OwnerBRGUID );
+				BedFrameWork.RemoveRespawnData( this.GetBedOwner() );
 			}
 		}
 
@@ -275,10 +287,10 @@ modded class TentBase
 		if ( GetGame().IsServer() && BedFrameWork.IsOPBaseItem(this.GetType()) )
 		{
 			if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport == 0 ) return;
-			if ( GetState() == PITCHED && m_OwnerBRGUID != "" )
+			if ( GetState() == PITCHED && this.GetBedOwner() != "" )
 			{
 				Print("[Bed-Respawn 2.0] Ran EEDelete for Sleeping Bag!");
-				BedFrameWork.RemoveRespawnData( m_OwnerBRGUID );
+				BedFrameWork.RemoveRespawnData( this.GetBedOwner() );
 			}
 		}
 	}
@@ -286,10 +298,10 @@ modded class TentBase
 
 class BedData : BedFrameWork
 {
-	string m_BedOwner = "test";
-	vector m_BedPos = "1 0 1";
-	int m_RespawnTime = 0;
-	int m_BRUsesLeft = 0;
+	private string m_BedOwner = "test";
+	private vector m_BedPos = "1 0 1";
+	private int m_RespawnTime = 0;
+	private int m_BRUsesLeft = 0;
 
 	void BedData(string owner, vector pos, int time, int uses)
 	{

@@ -9,10 +9,10 @@ modded class ActionFoldItem
 		ItemBase bed = action_data.m_Target.GetObject();
 		if ( BedFrameWork.IsMuchStuffItem(bed.GetType()) )
 		{
-			if ( bed.m_OwnerBRGUID != "" )
+			if ( bed.GetBedOwner() != "" )
 			{
 				Print("[Bed-Respawn 2.0] Ran EEDelete for MSP Sleeping Bag!");
-				BedFrameWork.RemoveRespawnData( bed.m_OwnerBRGUID );
+				BedFrameWork.RemoveRespawnData( bed.GetBedOwner() );
 			}
 		}
 	}
@@ -32,10 +32,10 @@ modded class ItemBase
 				PlayerIdentity pd = player_base.GetIdentity();
 				vector pos = player_base.GetLocalProjectionPosition();
 
-				m_OwnerBRGUID = pd.GetId();
-				m_BRUses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
+				this.SetBedOwner(pd.GetId());
+				this.SetBedUses(BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval);
 
-				BedFrameWork.InsertBed( player_base, m_OwnerBRGUID, pos, 0, m_BRUses );
+				BedFrameWork.InsertBed( player_base, this.GetBedOwner(), pos, 0, this.GetBedUses() );
 			}
 		}
 	}
@@ -50,10 +50,10 @@ modded class ItemBase
 		{
 			if ( BedFrameWork.IsMuchStuffItem(this.GetType()) )
 			{
-				if ( m_OwnerBRGUID != "" )
+				if ( this.GetBedOwner() != "" )
 				{
 					Print("[Bed-Respawn 2.0] Ran EEDelete for MSP Sleeping Bag!");
-					BedFrameWork.RemoveRespawnData( m_OwnerBRGUID );
+					BedFrameWork.RemoveRespawnData( this.GetBedOwner() );
 				}
 			}
 		}
@@ -65,8 +65,8 @@ modded class ItemBase
 
 		if ( BedFrameWork.IsMuchStuffItem(this.GetType()) )
 		{
-			ctx.Write(m_OwnerBRGUID);
-			ctx.Write(m_BRUses);
+			ctx.Write(this.GetBedOwner());
+			ctx.Write(this.GetBedUses());
 		}
 	}
 
@@ -77,10 +77,10 @@ modded class ItemBase
 
 		if ( BedFrameWork.IsMuchStuffItem(this.GetType()) )
 		{
-			if ( !ctx.Read(m_OwnerBRGUID) )
+			if ( !ctx.Read(this.GetBedOwner()) )
 				return false;
 
-			if ( !ctx.Read(m_BRUses) )
+			if ( !ctx.Read(this.GetBedUses()) )
 				return false;
 		}
 
