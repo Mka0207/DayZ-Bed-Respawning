@@ -465,6 +465,7 @@ class BedFrameWork : Managed
 
 				if ( m_BedConfig.BedRespawnTimeMinutes > 0 && CF_Date.Now(true).GetTimestamp() >= bed.GetRespawnTime() )
 				{
+					if ( m_BedConfig.MaxRespawnsBeforeRemoval == 1 ) return;
 					bed.SetRespawnTime( CF_Date.Now(true).GetTimestamp() + ( BedFrameWork.m_BedConfig.BedRespawnTimeMinutes * 60 ) );
 					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
 				}
