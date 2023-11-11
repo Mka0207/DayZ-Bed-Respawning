@@ -23,7 +23,7 @@ modded class ActionPlaceObject
 				Print("[ActionPlaceObject] OnFinishProgressServer - BBP FIX");
 
 				PlayerIdentity pd = action_data.m_Player.GetIdentity();
-				vector pos = action_data.m_Player.GetLocalProjectionPosition();
+				vector pos = action_data.m_Player.GetPosition();
 
 				bed.SetBedOwner(pd.GetId());
 				bed.SetBedUses(BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval);
@@ -68,12 +68,12 @@ modded class ItemBase
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
 				PlayerIdentity pd = player_base.GetIdentity();
-				vector pos = player_base.GetLocalProjectionPosition();
+				//vector pos = player_base.GetLocalProjectionPosition();
 
 				m_OwnerBRGUID = pd.GetId();
 				m_BRUses = BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval;
 
-				BedFrameWork.InsertBed( player_base, m_OwnerBRGUID, pos, 0, m_BRUses );
+				BedFrameWork.InsertBed( player_base, m_OwnerBRGUID, position, 0, m_BRUses );
 			}
 		}
 	}
@@ -141,13 +141,16 @@ modded class SleepingBagBase
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
 				PlayerIdentity pd = player_base.GetIdentity();
-				vector pos = player_base.GetLocalProjectionPosition();
+				//vector pos = player_base.GetLocalProjectionPosition();
 
 				SleepingBagBase_Deployed target = SleepingBagBase_Deployed.Cast( SleepingBag_Deployed );
 				target.SetBedOwner(pd.GetId());
 				target.SetBedUses(BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval);
 
-				BedFrameWork.InsertBed( player_base, target.GetBedOwner(), pos, 0, target.GetBedUses() );
+
+				//Print(pos);
+
+				BedFrameWork.InsertBed( player_base, target.GetBedOwner(), position, 0, target.GetBedUses() );
 			}
 		}
 	}
@@ -451,7 +454,7 @@ class BedFrameWork : Managed
 				
 				if ( m_BedConfig.MaxRespawnsBeforeRemoval > 0 )
 				{
-					bed.SetUsesLeft( Math.Clamp( bed.GetUsesLeft() - 1, 0, m_BedConfig.MaxRespawnsBeforeRemoval ) )
+					bed.SetUsesLeft( Math.Clamp( bed.GetUsesLeft() - 1, 0, m_BedConfig.MaxRespawnsBeforeRemoval ) );
 					JsonFileLoader<BedData>.JsonSaveFile(saved_bed, bed);
 
 					if ( bed.GetUsesLeft() <= 0 )
@@ -517,7 +520,7 @@ class BedFrameWork : Managed
 
 	static bool IsOPBaseItem(string c)
 	{
-		return c == "OP_SleepingBagCamo" || c == "OP_SleepingBagBlue" || c == "OP_SleepingBagGrey"
+		return c == "OP_SleepingBagCamo" || c == "OP_SleepingBagBlue" || c == "OP_SleepingBagGrey";
 	}
 
 	static bool IsDeployedMungItem(string c)
