@@ -30,12 +30,12 @@ modded class ItemBase
 			{
 				PlayerBase player_base = PlayerBase.Cast( player );
 				PlayerIdentity pd = player_base.GetIdentity();
-				vector pos = player_base.GetLocalProjectionPosition();
+				//vector pos = player_base.GetLocalProjectionPosition();
 
 				this.SetBedOwner(pd.GetId());
 				this.SetBedUses(BedFrameWork.m_BedConfig.MaxRespawnsBeforeRemoval);
 
-				BedFrameWork.InsertBed( player_base, this.GetBedOwner(), pos, 0, this.GetBedUses() );
+				BedFrameWork.InsertBed( player_base, this.GetBedOwner(), position, 0, this.GetBedUses() );
 			}
 		}
 	}
