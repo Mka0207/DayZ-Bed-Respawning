@@ -218,6 +218,7 @@ modded class ActionPackRespawnBag
 }
 
 //OP_BaseItems support
+#ifdef OP_BaseItems
 modded class TentBase
 {
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0" )
@@ -298,6 +299,7 @@ modded class TentBase
 		}
 	}
 }
+#endif
 
 class BedData : BedFrameWork
 {
