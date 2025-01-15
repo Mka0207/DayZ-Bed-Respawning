@@ -66,6 +66,10 @@ class CfgVehicles
 		rotationFlags=8;
 		itemSize[]={3,4};
 		lootCategory="Materials";
+		hiddenSelections[]=
+		{
+			"Texture"
+		};
 		hiddenSelectionsTextures[]=
 		{
 			"BedRespawning\data\sleepingbagnew_co.paa"
