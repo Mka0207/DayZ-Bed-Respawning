@@ -12,7 +12,8 @@ class CfgPatches
 		requiredAddons[]=
 		{
 			"DZ_Data",
-			"DZ_Scripts"
+			"DZ_Scripts",
+			"JM_CF_Scripts"
 		};
 	};
 };
@@ -26,6 +27,7 @@ class CfgMods
 		name="BedRespawning";
 		credits="Mka0207";
 		author="Mka0207";
+		storageVersion = 2;
 		dependencies[]=
 		{
 			"Game",
