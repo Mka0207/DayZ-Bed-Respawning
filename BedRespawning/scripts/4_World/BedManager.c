@@ -399,21 +399,19 @@ class BedFrameWork : Managed
 	static void DeleteBedItem(string guid, vector pos)
 	{
 		ref array<Object> Player_Bed = new array<Object>;
-		GetGame().GetObjectsAtPosition( pos, 1.0, Player_Bed, NULL );
-		for ( int i = 0; i < Player_Bed.Count(); i++ )
+		GetGame().GetObjectsAtPosition(pos, 1.0, Player_Bed, NULL);
+		for (int i = 0; i < Player_Bed.Count(); i++)
 		{
-			Object bed = Player_Bed.Get( i );
-			if ( bed.IsItemBase() )
+			Object bed = Player_Bed.Get(i);
+			if (bed.IsItemBase())
 			{
-				if ( bed.IsInherited(SleepingBagBase_Deployed) || ClassDeleteFilter( bed.GetType() ) )
+				// Check if GetBedOwner exists and is not empty
+				if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
 				{
-					if ( bed.GetPosition().ToString(false) == pos.ToString(false) )
-					{
-						GetGame().ObjectDelete(bed);
-					}
+					GetGame().ObjectDelete(bed);
 				}
 			}
 		}
-		DeleteBedData( guid, pos );
+		DeleteBedData(guid, pos);
 	}
 }

@@ -5,7 +5,7 @@
 
 modded class ItemBase
 {
-	private string m_OwnerBRGUID;
+	string m_OwnerBRGUID;
 
 	string GetBedOwner()
 	{
@@ -31,7 +31,6 @@ modded class ItemBase
 		
 		if (!ctx.Read(m_OwnerBRGUID))
 			return false;
-		Print("[Bed-Respawn 2.0] OnStoreLoad for " + this.GetType() + " with owner: " + m_OwnerBRGUID);
 		
 		return true;
 	}

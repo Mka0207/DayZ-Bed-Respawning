@@ -111,15 +111,25 @@ class ActionClaimRespawnBag: ActionInteractBase
 	{	
 		Object targetObject = target.GetObject();
 		SleepingBagBase_Deployed m_sleepingbag = SleepingBagBase_Deployed.Cast( targetObject );
+		TentBase tent = TentBase.Cast(targetObject);
+
+		if (tent)
+		{
+			if (tent.GetState() != tent.PITCHED)
+			{
+				return false;
+			}
+		}
 
 		if ( m_sleepingbag )
 		{
-			if ( m_sleepingbag.GetNumberOfItems() == 0 )
-	        {
-	            return true;
-	        }
+			if ( m_sleepingbag.GetNumberOfItems() != 0 )
+			{
+				return false;
+			}
 		}
-		return false;
+
+		return true;
 	}
 
 	override void OnExecuteServer(ActionData action_data)
@@ -128,7 +138,7 @@ class ActionClaimRespawnBag: ActionInteractBase
 
 		if (GetGame().IsServer())
 		{
-			SleepingBagBase_Deployed bag = SleepingBagBase_Deployed.Cast(action_data.m_Target.GetObject());
+			ItemBase bag = ItemBase.Cast(action_data.m_Target.GetObject());
 			PlayerIdentity pd = action_data.m_Player.GetIdentity();
 
 			if (!bag)
@@ -146,7 +156,7 @@ class ActionClaimRespawnBag: ActionInteractBase
 			}
 
 			// If the player already has a bed saved at this position, we can't claim it again.
-			if (BedFrameWork.GetUserBedPosition(pd.GetId()).ToString(false) == bag.GetPosition().ToString(false) || bag.GetBedOwner())
+			if (BedFrameWork.GetUserBedPosition(pd.GetId()).ToString(false) == bag.GetPosition().ToString(false) && bag.GetBedOwner() == pd.GetId())
 			{
 				Print("[Bed-Respawn 2.0] Ran ActionClaimRespawnBag for Sleeping Bag, but player already has a bed at this position!");
 				action_data.m_Player.RPCSingleParam(ERPCs.RPC_USER_ACTION_MESSAGE, new Param1<string>("You've already claimed this sleeping bag!"), true, pd);
