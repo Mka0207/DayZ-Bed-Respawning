@@ -28,12 +28,19 @@ class CfgMods
 		author="Mka0207";
 		dependencies[]=
 		{
+			"Game",
 			"World",
 			"Mission"
 		};
 		
 	    class defs
 	    {
+			class gameScriptModule
+            {
+                value="";
+                files[]={"BedRespawning/scripts/3_Game"};
+            };
+
             class worldScriptModule
             {
                 value="";

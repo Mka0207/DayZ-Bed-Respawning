@@ -1,3 +1,8 @@
+/*
+* Copyright (C) 2025 fwkzt.com <https://steamcommunity.com/id/mka0207/>
+* Licensed under "All Rights Reserved"
+*/
+
 modded class ModItemRegisterCallbacks
 {
     override void RegisterTwoHanded(DayZPlayerType pType, DayzPlayerItemBehaviorCfg pBehavior)
@@ -7,85 +12,17 @@ modded class ModItemRegisterCallbacks
     }
 }
 
-class ActionPackRespawnBag: ActionContinuousBase
-{
-	void ActionPackRespawnBag()
-	{
-		m_CallbackClass = ActionBuildOvenCB;
-		m_CommandUID = DayZPlayerConstants.CMD_ACTIONFB_CRAFTING;
-		m_FullBody = true;
-		m_StanceMask = DayZPlayerConstants.STANCEMASK_CROUCH;
-		m_SpecialtyWeight = UASoftSkillsWeight.ROUGH_HIGH;
-	}
-	
-	override void CreateConditionComponents()  
-	{	
-		
-		m_ConditionTarget = new CCTNonRuined( UAMaxDistances.DEFAULT );
-		m_ConditionItem = new CCINotPresent;
-	}
-		
-	override string GetText()
-	{
-		return "Pack Sleeping Bag";
-	}
-	
-	override typename GetInputType()
-	{
-		return ContinuousInteractActionInput;
-	}
-
-	override bool HasProgress()
-	{
-		return true;
-	}
-
-	override bool ActionCondition( PlayerBase player, ActionTarget target, ItemBase item )
-	{	
-		Object targetObject = target.GetObject();
-		SleepingBagBase_Deployed m_sleepingbag = SleepingBagBase_Deployed.Cast( targetObject );
-
-		if ( m_sleepingbag )
-		{
-			if ( m_sleepingbag.GetNumberOfItems() == 0 )
-	        {
-	            return true;
-	        }
-		}
-		return false;
-	}
-		
-	override void OnFinishProgressServer( ActionData action_data )
-	{	
-		Object targetObject = action_data.m_Target.GetObject();
-		SleepingBagBase_Deployed target = SleepingBagBase_Deployed.Cast( targetObject );
-		vector position = target.GetPosition();
-
-		target.SpawnTheTent(position);
-		target.Delete();
-	}
-}
-
-modded class ActionConstructor
-{
-    override void RegisterActions(TTypenameArray actions)
-    {
-        super.RegisterActions(actions);
-		actions.Insert(ActionPackRespawnBag);
-    }
-};
-
 class SleepingBagBase extends ItemBase
 {
 	ref protected EffectSound 	m_DeployLoopSound;
 	protected Object			SleepingBag_Deployed;
 	protected Object			SB_ClutterCutter;
 
-
 	override bool IsBasebuildingKit()
 	{
 		return true;
 	}
+
 	string BagDeployClass()
 	{
 		return "br_sleepingbag";
@@ -93,7 +30,7 @@ class SleepingBagBase extends ItemBase
 	
 	void SleepingBagBase()
 	{
-		RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
+		//RegisterNetSyncVariableBool("m_IsSoundSynchRemote");
 	}
 	
 	override void EEInit()
@@ -101,17 +38,17 @@ class SleepingBagBase extends ItemBase
 		super.EEInit();
 	}
 	
-
 	override void OnItemLocationChanged( EntityAI old_owner, EntityAI new_owner ) 
 	{
 		super.OnItemLocationChanged( old_owner, new_owner );
 	}		
 
+	//Disabled because it doesnt stop playing the deploy loop sound when the bag is packed.
 	override void OnVariablesSynchronized()
 	{
-		super.OnVariablesSynchronized();
+		//super.OnVariablesSynchronized();
 		
-		if ( IsDeploySound() )
+		/*if ( IsDeploySound() )
 		{
 			PlayDeploySound();
 		}
@@ -124,8 +61,8 @@ class SleepingBagBase extends ItemBase
 		if ( m_DeployLoopSound && !CanPlayDeployLoopSound() )
 		{
 			StopDeployLoopSound();
-		}
-	}	
+		}*/
+	}
 		
 	override void OnPlacementComplete( Man player, vector position = "0 0 0", vector orientation = "0 0 0"  )
 	{
@@ -147,7 +84,7 @@ class SleepingBagBase extends ItemBase
 			this.Delete();			
 		}	
 		
-		SetIsDeploySound( true );
+		//SetIsDeploySound( true );
 	}
 	
 	override bool IsDeployable()
@@ -197,7 +134,7 @@ class br_sleepingbag extends SleepingBagBase {
 	}
 };
 
-class SleepingBagBase_Deployed extends ItemBase
+class SleepingBagBase_Deployed : ItemBase
 {
 	protected Object SB_ClutterCutter;
 
@@ -226,8 +163,8 @@ class SleepingBagBase_Deployed extends ItemBase
 		super.SetActions();
 		
 		AddAction(ActionPackRespawnBag);
+		AddAction(ActionClaimRespawnBag);
 	}
-
 };
 
 modded class Hologram
