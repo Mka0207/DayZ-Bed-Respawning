@@ -7,6 +7,12 @@
 #ifdef BBPItemPack
 modded class BBP_Bed
 {
+	override void SetActions()
+	{
+		super.SetActions();
+		if ( BedFrameWork.m_BedConfig.EnableBBP != 1 ) return;
+		AddAction(ActionClaimRespawnBag);
+	}
 	override void EEDelete(EntityAI parent)
 	{
 		super.EEDelete(parent);
@@ -21,11 +27,6 @@ modded class BBP_Bed
 			}
 		}
 	}
-	override void SetActions()
-	{
-		super.SetActions();
-		AddAction(ActionClaimRespawnBag);
-	}
 }
 #endif
 
@@ -36,6 +37,7 @@ modded class OP_SleepingBagColorbase
 	override void SetActions()
 	{
 		super.SetActions();
+		if ( BedFrameWork.m_BedConfig.EnableOpBaseItemSupport != 1 ) return;
 		AddAction(ActionClaimRespawnBag);
 	}
 }
@@ -76,6 +78,7 @@ modded class sleepingbag_colorbase_mung_Deployed
 	override void SetActions()
 	{
 		super.SetActions();
+		if ( BedFrameWork.m_BedConfig.EnableMung != 1 ) return;
 		AddAction(ActionClaimRespawnBag);
 	}
 
@@ -102,6 +105,7 @@ modded class ZenSleepingBagDeployed_Base
 	override void SetActions()
 	{
 		super.SetActions();
+		if ( BedFrameWork.m_BedConfig.EnableZen != 1 ) return;
 		AddAction(ActionClaimRespawnBag);
 	}
 
@@ -129,6 +133,7 @@ modded class bl_bed
 	override void SetActions()
 	{
 		super.SetActions();
+		if ( BedFrameWork.m_BedConfig.EnableBoomlay != 1 ) return;
 		AddAction(ActionClaimRespawnBag);
 	}
 
@@ -154,6 +159,7 @@ modded class rag_baseitems_sleepingbag_base
 	override void SetActions()
 	{
 		super.SetActions();
+		if ( BedFrameWork.m_BedConfig.EnableRagBase != 1 ) return;
 		AddAction(ActionClaimRespawnBag);
 	}
 

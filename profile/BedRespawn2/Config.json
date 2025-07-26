@@ -1,0 +1,14 @@
+{
+    "MaxRespawnsBeforeRemoval": 0,
+    "BedRespawnTimeMinutes": 45,
+    "HealthPercentage": 100,
+    "EnergyPercentage": 100,
+    "WaterPercentage": 100,
+    "DisableAutoSpawnCall": 0,
+    "EnableOpBaseItemSupport": 1,
+    "EnableBBP": 1,
+    "EnableMung": 1,
+    "EnableZen": 1,
+    "EnableBoomlay": 1,
+    "EnableRagBase": 1
+}

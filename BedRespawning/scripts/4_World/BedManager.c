@@ -47,13 +47,17 @@ class BedConfig
 {
 	int MaxRespawnsBeforeRemoval = 0;
 	int BedRespawnTimeMinutes = 45;
-	int EnableOpBaseItemSupport = 1;
 	int HealthPercentage = 100;
 	int EnergyPercentage = 100;
 	int WaterPercentage = 100;
 	int DisableAutoSpawnCall = 0;
+
+	int EnableOpBaseItemSupport = 1;
 	int EnableBBP = 1;
 	int EnableMung = 1;
+	int EnableZen = 1;
+	int EnableBoomlay = 1;
+	int EnableRagBase = 1;
 }
 
 class BedFrameWork : Managed
