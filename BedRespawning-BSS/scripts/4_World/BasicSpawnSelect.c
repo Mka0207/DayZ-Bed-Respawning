@@ -25,9 +25,9 @@ modded class PluginBasicSpawnSelectServer
                 }
 
 				//Bed-Respawning Compat
-				if ( m_choosenSpawn.GetName() == "Bed" )
+				if ( m_choosenSpawn.GetName() == "Bed" && BedFrameWork.HasBedData(player.GetIdentity().GetId()) )
 				{
-					BedFrameWork.OnEquipCharacter( player );
+					BedFrameWork.TeleportPlayer( player );
 				} else {
 					player.SetPosition(FinalSpawnPos);
 				}
